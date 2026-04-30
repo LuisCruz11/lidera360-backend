@@ -61,7 +61,7 @@ class UsuarioServicio:
             None,
             data['username'],
             password_cifrado.decode('utf-8'),
-            2,
+            4,
             data['cedula'],
             1
         )
