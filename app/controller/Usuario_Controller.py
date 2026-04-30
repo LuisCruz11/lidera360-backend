@@ -15,8 +15,8 @@ class UsuarioController:
         return UsuarioServicio.login(data)
 
     @staticmethod
-    def crear_usuario(data):
-        return UsuarioServicio.crear_usuario(data)
+    def registrar_cliente_usuario(data):
+        return UsuarioServicio.registrar_cliente_usuario(data)
 
     @staticmethod
     def actualizar_usuario(id_usuario, data):

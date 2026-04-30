@@ -1,6 +1,9 @@
 from flask import Flask
 from flask_cors import CORS
 from app.Config import Config
+from flask_mail import Mail
+
+mail = Mail()
 
 from app.routes.Cliente_rutas import cliente_bp
 from app.routes.Usuario_rutas import usuario_bp
@@ -18,6 +21,7 @@ def crear_app():
 
     app = Flask(__name__)
     app.config.from_object(Config)
+    mail.init_app(app)
 
     CORS(app)
 

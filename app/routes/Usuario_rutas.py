@@ -24,11 +24,44 @@ def login():
 
     return jsonify({"mensaje": "Credenciales incorrectas"}), 401
 
-@usuario_bp.route('/', methods=['POST'])
-def crear_usuario():
-    data = request.json
-    id_usuario = UsuarioController.crear_usuario(data)
-    return jsonify({"mensaje": "Usuario creado", "id_usuario": id_usuario}), 201
+@usuario_bp.route('/registro', methods=['POST'])
+def registro():
+    data = request.get_json(silent=True) or {}
+
+    campos_requeridos = [
+        'cedula',
+        'nombres',
+        'apellidos',
+        'correo',
+        'telefono',
+        'sexo',
+        'edad',
+        'username',
+        'password'
+    ]
+
+    campos_faltantes = [
+        campo for campo in campos_requeridos
+        if campo not in data or data[campo] in (None, '')
+    ]
+
+    if campos_faltantes:
+        return jsonify({
+            "mensaje": "Faltan campos obligatorios",
+            "campos": campos_faltantes
+        }), 400
+
+    try:
+        correo_enviado = UsuarioController.registrar_cliente_usuario(data)
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 409
+
+    if not correo_enviado:
+        return jsonify({
+            "mensaje": "Usuario registrado correctamente, pero no se pudo enviar el correo"
+        }), 201
+
+    return jsonify({"mensaje": "Usuario registrado correctamente"}), 201
 
 @usuario_bp.route('/<int:id_usuario>', methods=['PUT'])
 def actualizar_usuario(id_usuario):

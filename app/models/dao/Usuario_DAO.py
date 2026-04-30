@@ -1,6 +1,6 @@
 from app.database.Db import Db
 from app.models.dto.Usuario_DTO import UsuarioDTO
-
+import bcrypt
 
 class UsuarioDAO:
 
@@ -35,16 +35,15 @@ class UsuarioDAO:
         return None
 
     @staticmethod
-    def login(username, password):
+    def obtener_por_username(username):
         conexion = Db.obtener_conexion()
         try:
             cursor = conexion.cursor()
             cursor.execute("""
                 SELECT id_usuario, username, password, id_rol, cedula_personal, activo
                 FROM usuarios
-                WHERE username = %s AND password = %s AND activo = 1
-            """, (username, password))
-
+                WHERE username = %s
+            """, (username,))
             fila = cursor.fetchone()
         finally:
             conexion.close()
@@ -54,8 +53,35 @@ class UsuarioDAO:
         return None
 
     @staticmethod
-    def crear(usuario_dto):
+    def login(username, password):
         conexion = Db.obtener_conexion()
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("""
+                SELECT id_usuario, username, password, id_rol, cedula_personal, activo
+                FROM usuarios
+                WHERE username = %s AND activo = 1
+            """, (username,))
+
+            fila = cursor.fetchone()
+        finally:
+            conexion.close()
+
+        if fila:
+
+            password_db = fila[2].encode('utf-8')
+
+            if bcrypt.checkpw(password.encode('utf-8'), password_db):
+                return UsuarioDTO(*fila)
+
+        return None
+
+    @staticmethod
+    def crear(usuario_dto, conexion=None):
+        cerrar_conexion = conexion is None
+        if cerrar_conexion:
+            conexion = Db.obtener_conexion()
+
         try:
             cursor = conexion.cursor()
             cursor.execute("""
@@ -68,10 +94,12 @@ class UsuarioDAO:
                 usuario_dto.cedula_personal,
                 usuario_dto.activo
             ))
-            conexion.commit()
+            if cerrar_conexion:
+                conexion.commit()
             return cursor.lastrowid
         finally:
-            conexion.close()
+            if cerrar_conexion:
+                conexion.close()
 
     @staticmethod
     def actualizar(id_usuario, usuario_dto):

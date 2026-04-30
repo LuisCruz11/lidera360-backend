@@ -36,8 +36,25 @@ class ClienteDAO:
         return None
 
     @staticmethod
-    def crear(cliente_dto):
+    def obtener_por_correo(correo):
         conexion = Db.obtener_conexion()
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("SELECT * FROM clientes WHERE correo = %s", (correo,))
+            fila = cursor.fetchone()
+        finally:
+            conexion.close()
+
+        if fila:
+            return ClienteDTO(*fila)
+        return None
+
+    @staticmethod
+    def crear(cliente_dto, conexion=None):
+        cerrar_conexion = conexion is None
+        if cerrar_conexion:
+            conexion = Db.obtener_conexion()
+
         try:
             cursor = conexion.cursor()
             cursor.execute("""
@@ -53,9 +70,11 @@ class ClienteDAO:
                 cliente_dto.edad,
                 cliente_dto.id_estado
             ))
-            conexion.commit()
+            if cerrar_conexion:
+                conexion.commit()
         finally:
-            conexion.close()
+            if cerrar_conexion:
+                conexion.close()
 
     @staticmethod
     def actualizar(cedula, cliente_dto):
