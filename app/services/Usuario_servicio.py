@@ -81,7 +81,8 @@ class UsuarioServicio:
         correo_enviado = True
         try:
             enviar_correo_registro(data['correo'], data['nombres'])
-        except Exception:
+        except Exception as error:
+            print(f"Error enviando correo de registro: {error}", flush=True)
             correo_enviado = False
 
         return correo_enviado

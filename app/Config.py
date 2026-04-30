@@ -14,5 +14,5 @@ class Config:
     DB_NAME = os.getenv("DB_NAME")
 
     RESEND_API_KEY = os.getenv("RESEND_API_KEY")
-    RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "Lidera360 <onboarding@resend.dev>")
+    RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev")
     RESEND_TIMEOUT = int(os.getenv("RESEND_TIMEOUT", 10))

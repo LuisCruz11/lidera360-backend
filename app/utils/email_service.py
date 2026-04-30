@@ -1,5 +1,6 @@
 from flask import current_app
 import json
+import urllib.error
 import urllib.request
 
 
@@ -19,11 +20,19 @@ Ahora puedes iniciar tu proceso de transformacion personal.
 Equipo Lidera360
 """
 
+    html = f"""
+<p>Hola {nombre},</p>
+<p>Te has registrado correctamente en Lidera360.</p>
+<p>Ahora puedes iniciar tu proceso de transformacion personal.</p>
+<p>Equipo Lidera360</p>
+"""
+
     payload = {
         "from": current_app.config.get("RESEND_FROM_EMAIL"),
         "to": [destinatario],
         "subject": "Bienvenido a Lidera360",
-        "text": texto
+        "text": texto,
+        "html": html
     }
 
     request = urllib.request.Request(
@@ -36,8 +45,12 @@ Equipo Lidera360
         method="POST"
     )
 
-    with urllib.request.urlopen(
-        request,
-        timeout=current_app.config.get("RESEND_TIMEOUT")
-    ) as response:
-        return json.loads(response.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(
+            request,
+            timeout=current_app.config.get("RESEND_TIMEOUT")
+        ) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as error:
+        detalle = error.read().decode("utf-8")
+        raise RuntimeError(f"Resend respondio {error.code}: {detalle}") from error
