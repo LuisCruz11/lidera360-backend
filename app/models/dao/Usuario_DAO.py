@@ -9,7 +9,7 @@ class UsuarioDAO:
         conexion = Db.obtener_conexion()
         try:
             cursor = conexion.cursor()
-            cursor.execute("SELECT id_usuario, username, password, id_rol, cedula_personal, activo FROM usuarios")
+            cursor.execute("SELECT id_usuario, username, password, id_rol, cedula_personal, activo, cedula_cliente FROM usuarios")
             resultados = cursor.fetchall()
         finally:
             conexion.close()
@@ -22,7 +22,7 @@ class UsuarioDAO:
         try:
             cursor = conexion.cursor()
             cursor.execute("""
-                SELECT id_usuario, username, password, id_rol, cedula_personal, activo
+                SELECT id_usuario, username, password, id_rol, cedula_personal, activo, cedula_cliente
                 FROM usuarios
                 WHERE id_usuario = %s
             """, (id_usuario,))
@@ -40,7 +40,7 @@ class UsuarioDAO:
         try:
             cursor = conexion.cursor()
             cursor.execute("""
-                SELECT id_usuario, username, password, id_rol, cedula_personal, activo
+                SELECT id_usuario, username, password, id_rol, cedula_personal, activo, cedula_cliente
                 FROM usuarios
                 WHERE username = %s
             """, (username,))
@@ -58,7 +58,7 @@ class UsuarioDAO:
         try:
             cursor = conexion.cursor()
             cursor.execute("""
-                SELECT id_usuario, username, password, id_rol, cedula_personal, activo
+                SELECT id_usuario, username, password, id_rol, cedula_personal, activo, cedula_cliente
                 FROM usuarios
                 WHERE username = %s AND activo = 1
             """, (username,))
@@ -85,14 +85,15 @@ class UsuarioDAO:
         try:
             cursor = conexion.cursor()
             cursor.execute("""
-                INSERT INTO usuarios (username, password, id_rol, cedula_personal, activo)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO usuarios (username, password, id_rol, cedula_personal, activo, cedula_cliente)
+                VALUES (%s, %s, %s, %s, %s, %s)
             """, (
                 usuario_dto.username,
                 usuario_dto.password,
                 usuario_dto.id_rol,
                 usuario_dto.cedula_personal,
-                usuario_dto.activo
+                usuario_dto.activo,
+                usuario_dto.cedula_cliente
             ))
             if cerrar_conexion:
                 conexion.commit()
@@ -108,7 +109,7 @@ class UsuarioDAO:
             cursor = conexion.cursor()
             cursor.execute("""
                 UPDATE usuarios
-                SET username = %s, password = %s, id_rol = %s, cedula_personal = %s, activo = %s
+                SET username = %s, password = %s, id_rol = %s, cedula_personal = %s, activo = %s, cedula_cliente = %s
                 WHERE id_usuario = %s
             """, (
                 usuario_dto.username,
@@ -116,6 +117,7 @@ class UsuarioDAO:
                 usuario_dto.id_rol,
                 usuario_dto.cedula_personal,
                 usuario_dto.activo,
+                usuario_dto.cedula_cliente,
                 id_usuario
             ))
             conexion.commit()

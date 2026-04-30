@@ -51,6 +51,12 @@ def registro():
             "campos": campos_faltantes
         }), 400
 
+    sexos_validos = ['M', 'F', 'Otro']
+    if data['sexo'] not in sexos_validos:
+        return jsonify({
+            "mensaje": "El sexo debe ser M, F u Otro"
+        }), 400
+
     try:
         correo_enviado = UsuarioController.registrar_cliente_usuario(data)
     except ValueError as error:

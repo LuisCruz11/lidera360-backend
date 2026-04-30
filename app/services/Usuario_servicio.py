@@ -62,8 +62,9 @@ class UsuarioServicio:
             data['username'],
             password_cifrado.decode('utf-8'),
             4,
-            data['cedula'],
-            1
+            None,
+            1,
+            data['cedula']
         )
 
         conexion = Db.obtener_conexion()
@@ -93,7 +94,8 @@ class UsuarioServicio:
             data['password'],
             data.get('id_rol'),
             data.get('cedula_personal'),
-            data.get('activo', True)
+            data.get('activo', True),
+            data.get('cedula_cliente')
         )
         return UsuarioDAO.actualizar(id_usuario, usuario)
 
