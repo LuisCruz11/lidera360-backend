@@ -2,6 +2,5 @@ flask
 flask-cors
 gunicorn
 pymysql
-flask-mail
 bcrypt
 python-dotenv
