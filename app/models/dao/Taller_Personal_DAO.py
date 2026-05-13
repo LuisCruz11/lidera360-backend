@@ -10,7 +10,7 @@ class TallerPersonalDAO:
         try:
             cursor = conexion.cursor()
             cursor.execute("""
-                SELECT id_taller_personal, id_taller, cedula_personal, rol_en_taller
+                SELECT id_taller_personal, id_taller, cedula_personal, id_rol
                 FROM taller_personal
             """)
             resultados = cursor.fetchall()
@@ -25,7 +25,7 @@ class TallerPersonalDAO:
         try:
             cursor = conexion.cursor()
             cursor.execute("""
-                SELECT id_taller_personal, id_taller, cedula_personal, rol_en_taller
+                SELECT id_taller_personal, id_taller, cedula_personal, id_rol
                 FROM taller_personal
                 WHERE id_taller_personal = %s
             """, (id_taller_personal,))
@@ -43,12 +43,12 @@ class TallerPersonalDAO:
         try:
             cursor = conexion.cursor()
             cursor.execute("""
-                INSERT INTO taller_personal (id_taller, cedula_personal, rol_en_taller)
+                INSERT INTO taller_personal (id_taller, cedula_personal, id_rol)
                 VALUES (%s, %s, %s)
             """, (
                 taller_personal_dto.id_taller,
                 taller_personal_dto.cedula_personal,
-                taller_personal_dto.rol_en_taller
+                taller_personal_dto.id_rol
             ))
             conexion.commit()
             return cursor.lastrowid
@@ -62,12 +62,12 @@ class TallerPersonalDAO:
             cursor = conexion.cursor()
             cursor.execute("""
                 UPDATE taller_personal
-                SET id_taller = %s, cedula_personal = %s, rol_en_taller = %s
+                SET id_taller = %s, cedula_personal = %s, id_rol = %s
                 WHERE id_taller_personal = %s
             """, (
                 taller_personal_dto.id_taller,
                 taller_personal_dto.cedula_personal,
-                taller_personal_dto.rol_en_taller,
+                taller_personal_dto.id_rol,
                 id_taller_personal
             ))
             conexion.commit()

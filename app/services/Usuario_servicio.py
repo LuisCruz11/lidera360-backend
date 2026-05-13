@@ -2,6 +2,8 @@ from app.models.dao.Usuario_DAO import UsuarioDAO
 from app.models.dto.Usuario_DTO import UsuarioDTO
 from app.models.dao.Cliente_DAO import ClienteDAO
 from app.models.dto.Cliente_DTO import ClienteDTO
+from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
+from app.models.dto.Progreso_Cliente_DTO import ProgresoClienteDTO
 from app.utils.email_service import enviar_correo_registro
 from app.database.Db import Db
 import bcrypt
@@ -76,6 +78,7 @@ class UsuarioServicio:
         try:
             ClienteDAO.crear(cliente, conexion)
             UsuarioDAO.crear(usuario, conexion)
+            ProgresoClienteDAO.crear(ProgresoClienteDTO(None, data['cedula'], 1), conexion)
             conexion.commit()
         except Exception:
             conexion.rollback()

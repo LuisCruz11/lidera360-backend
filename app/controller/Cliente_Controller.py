@@ -11,6 +11,14 @@ class ClienteController:
         return ClienteServicio.obtener_cliente(cedula)
 
     @staticmethod
+    def obtener_panel_cliente(cedula):
+        return ClienteServicio.obtener_panel_cliente(cedula)
+
+    @staticmethod
+    def inscribir_en_taller(cedula, data):
+        return ClienteServicio.inscribir_en_taller(cedula, data)
+
+    @staticmethod
     def crear_cliente(data):
         ClienteServicio.crear_cliente(data)
 

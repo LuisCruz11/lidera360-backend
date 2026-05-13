@@ -18,6 +18,14 @@ def obtener_progreso(id_progreso):
     return jsonify({"mensaje": "Progreso no encontrado"}), 404
 
 
+@progreso_cliente_bp.route('/cliente/<cliente_cedula>', methods=['GET'])
+def obtener_progreso_por_cliente(cliente_cedula):
+    progreso = ProgresoClienteController.obtener_progreso_por_cliente(cliente_cedula)
+    if progreso:
+        return jsonify(progreso)
+    return jsonify({"mensaje": "Progreso no encontrado"}), 404
+
+
 @progreso_cliente_bp.route('/', methods=['POST'])
 def crear_progreso():
     data = request.json

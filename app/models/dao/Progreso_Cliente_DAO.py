@@ -35,8 +35,29 @@ class ProgresoClienteDAO:
         return None
 
     @staticmethod
-    def crear(progreso_dto):
+    def obtener_por_cliente(cliente_cedula):
         conexion = Db.obtener_conexion()
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("""
+                SELECT id_progreso, cliente_cedula, id_tipo_taller
+                FROM progreso_cliente
+                WHERE cliente_cedula = %s
+            """, (cliente_cedula,))
+            fila = cursor.fetchone()
+        finally:
+            conexion.close()
+
+        if fila:
+            return ProgresoClienteDTO(*fila)
+        return None
+
+    @staticmethod
+    def crear(progreso_dto, conexion=None):
+        cerrar_conexion = conexion is None
+        if cerrar_conexion:
+            conexion = Db.obtener_conexion()
+
         try:
             cursor = conexion.cursor()
             cursor.execute("""
@@ -46,10 +67,12 @@ class ProgresoClienteDAO:
                 progreso_dto.cliente_cedula,
                 progreso_dto.id_tipo_taller
             ))
-            conexion.commit()
+            if cerrar_conexion:
+                conexion.commit()
             return cursor.lastrowid
         finally:
-            conexion.close()
+            if cerrar_conexion:
+                conexion.close()
 
     @staticmethod
     def actualizar(id_progreso, progreso_dto):

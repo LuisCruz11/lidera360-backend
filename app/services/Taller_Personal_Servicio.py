@@ -22,7 +22,7 @@ class TallerPersonalServicio:
             None,
             data.get('id_taller'),
             data.get('cedula_personal'),
-            data.get('rol_en_taller')
+            data.get('id_rol')
         )
         return TallerPersonalDAO.crear(registro)
 
@@ -32,7 +32,7 @@ class TallerPersonalServicio:
             id_taller_personal,
             data.get('id_taller'),
             data.get('cedula_personal'),
-            data.get('rol_en_taller')
+            data.get('id_rol')
         )
         return TallerPersonalDAO.actualizar(id_taller_personal, registro)
 

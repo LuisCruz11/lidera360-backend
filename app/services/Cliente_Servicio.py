@@ -16,6 +16,18 @@ class ClienteServicio:
         return None
 
     @staticmethod
+    def obtener_panel_cliente(cedula):
+        return ClienteDAO.obtener_panel_cliente(cedula)
+
+    @staticmethod
+    def inscribir_en_taller(cedula, data):
+        id_taller = data.get('id_taller')
+        if not id_taller:
+            raise ValueError("El id_taller es obligatorio")
+
+        return ClienteDAO.inscribir_en_taller(cedula, id_taller)
+
+    @staticmethod
     def crear_cliente(data):
         cliente = ClienteDTO(
             data['cedula'],

@@ -12,6 +12,10 @@ class ProgresoClienteController:
         return ProgresoClienteServicio.obtener_progreso(id_progreso)
 
     @staticmethod
+    def obtener_progreso_por_cliente(cliente_cedula):
+        return ProgresoClienteServicio.obtener_progreso_por_cliente(cliente_cedula)
+
+    @staticmethod
     def crear_progreso(data):
         return ProgresoClienteServicio.crear_progreso(data)
 

@@ -17,6 +17,13 @@ class ProgresoClienteServicio:
         return None
 
     @staticmethod
+    def obtener_progreso_por_cliente(cliente_cedula):
+        progreso = ProgresoClienteDAO.obtener_por_cliente(cliente_cedula)
+        if progreso:
+            return progreso.to_dict()
+        return None
+
+    @staticmethod
     def crear_progreso(data):
         progreso = ProgresoClienteDTO(
             None,

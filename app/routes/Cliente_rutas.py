@@ -9,7 +9,29 @@ def obtener_clientes():
 
 @cliente_bp.route('/<cedula>', methods=['GET'])
 def obtener_cliente(cedula):
-    return jsonify(ClienteController.obtener_cliente(cedula))
+    cliente = ClienteController.obtener_cliente(cedula)
+    if cliente:
+        return jsonify(cliente)
+    return jsonify({"mensaje": "Cliente no encontrado"}), 404
+
+@cliente_bp.route('/<cedula>/panel', methods=['GET'])
+def obtener_panel_cliente(cedula):
+    panel = ClienteController.obtener_panel_cliente(cedula)
+    if panel:
+        return jsonify(panel)
+    return jsonify({"mensaje": "Cliente no encontrado"}), 404
+
+@cliente_bp.route('/<cedula>/inscripciones', methods=['POST'])
+def inscribir_cliente_en_taller(cedula):
+    data = request.get_json(silent=True) or {}
+    try:
+        id_inscripcion = ClienteController.inscribir_en_taller(cedula, data)
+        return jsonify({
+            "mensaje": "Inscripcion creada",
+            "id_inscripcion": id_inscripcion
+        }), 201
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 400
 
 @cliente_bp.route('/', methods=['POST'])
 def crear_cliente():
