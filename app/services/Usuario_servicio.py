@@ -22,12 +22,17 @@ class UsuarioServicio:
 
     @staticmethod
     def login(data):
+        usuario_existente = UsuarioDAO.obtener_por_username(data['username'])
+        
+        if not usuario_existente:
+            raise ValueError("No se encontró ningún usuario con ese nombre de usuario.")
+        
         usuario = UsuarioDAO.login(data['username'], data['password'])
-
+        
         if usuario:
             return usuario.to_dict()
-
-        return None
+        
+        raise ValueError("Credenciales incorrectas. Verifica tu contraseña.")
 
     @staticmethod
     def registrar_cliente_usuario(data):

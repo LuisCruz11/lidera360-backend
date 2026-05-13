@@ -17,12 +17,12 @@ def obtener_usuario(id_usuario):
 @usuario_bp.route('/login', methods=['POST'])
 def login():
     data = request.json
-    usuario = UsuarioController.login(data)
-
-    if usuario:
+    
+    try:
+        usuario = UsuarioController.login(data)
         return jsonify(usuario)
-
-    return jsonify({"mensaje": "Credenciales incorrectas"}), 401
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 401
 
 @usuario_bp.route('/registro', methods=['POST'])
 def registro():
