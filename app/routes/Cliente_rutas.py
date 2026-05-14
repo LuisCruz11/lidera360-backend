@@ -35,9 +35,30 @@ def inscribir_cliente_en_taller(cedula):
 
 @cliente_bp.route('/', methods=['POST'])
 def crear_cliente():
-    data = request.json
-    ClienteController.crear_cliente(data)
-    return jsonify({"mensaje": "Cliente creado"}), 201
+    data = request.get_json(silent=True) or {}
+    campos_requeridos = ['cedula', 'nombres', 'apellidos', 'sexo', 'edad', 'id_estado']
+    campos_faltantes = [
+        campo for campo in campos_requeridos
+        if campo not in data or data[campo] in (None, '')
+    ]
+
+    if campos_faltantes:
+        return jsonify({
+            "mensaje": "Faltan campos obligatorios",
+            "campos": campos_faltantes
+        }), 400
+
+    sexos_validos = ['M', 'F', 'Otro']
+    if data['sexo'] not in sexos_validos:
+        return jsonify({
+            "mensaje": "El sexo debe ser M, F u Otro"
+        }), 400
+
+    try:
+        ClienteController.crear_cliente(data)
+        return jsonify({"mensaje": "Cliente creado"}), 201
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 409
 
 @cliente_bp.route('/<cedula>', methods=['PUT'])
 def actualizar_cliente(cedula):

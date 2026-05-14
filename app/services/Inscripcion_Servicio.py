@@ -1,5 +1,6 @@
 from app.models.dao.Inscripcion_DAO import InscripcionDAO
 from app.models.dto.Inscripcion_DTO import InscripcionDTO
+from datetime import date
 
 
 class InscripcionServicio:
@@ -18,12 +19,21 @@ class InscripcionServicio:
 
     @staticmethod
     def crear_inscripcion(data):
+        cliente_cedula = data.get('cliente_cedula')
+        id_taller = data.get('id_taller')
+
+        if not cliente_cedula or not id_taller:
+            raise ValueError("Cliente y taller son obligatorios")
+
+        if InscripcionDAO.existe(cliente_cedula, id_taller):
+            raise ValueError("El cliente ya esta inscrito en este taller")
+
         inscripcion = InscripcionDTO(
             None,
-            data.get('cliente_cedula'),
-            data.get('id_taller'),
+            cliente_cedula,
+            id_taller,
             data.get('id_estado'),
-            data.get('fecha_inscripcion')
+            data.get('fecha_inscripcion') or date.today().isoformat()
         )
         return InscripcionDAO.crear(inscripcion)
 

@@ -1,5 +1,8 @@
 from app.models.dao.Cliente_DAO import ClienteDAO
 from app.models.dto.Cliente_DTO import ClienteDTO
+from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
+from app.models.dto.Progreso_Cliente_DTO import ProgresoClienteDTO
+from app.database.Db import Db
 
 class ClienteServicio:
 
@@ -29,6 +32,12 @@ class ClienteServicio:
 
     @staticmethod
     def crear_cliente(data):
+        if ClienteDAO.obtener_por_cedula(data['cedula']):
+            raise ValueError("La cedula ya esta registrada")
+
+        if data.get('correo') and ClienteDAO.obtener_por_correo(data.get('correo')):
+            raise ValueError("El correo ya esta registrado")
+
         cliente = ClienteDTO(
             data['cedula'],
             data['nombres'],
@@ -40,7 +49,25 @@ class ClienteServicio:
             data.get('id_estado')
         )
 
-        ClienteDAO.crear(cliente)
+        id_tipo_taller = data.get('id_tipo_taller')
+
+        if not id_tipo_taller:
+            ClienteDAO.crear(cliente)
+            return
+
+        conexion = Db.obtener_conexion()
+        try:
+            ClienteDAO.crear(cliente, conexion)
+            ProgresoClienteDAO.crear(
+                ProgresoClienteDTO(None, data['cedula'], id_tipo_taller),
+                conexion
+            )
+            conexion.commit()
+        except Exception:
+            conexion.rollback()
+            raise
+        finally:
+            conexion.close()
 
     @staticmethod
     def actualizar_cliente(cedula, data):

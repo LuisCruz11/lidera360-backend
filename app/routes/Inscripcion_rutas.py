@@ -20,9 +20,24 @@ def obtener_inscripcion(id_inscripcion):
 
 @inscripcion_bp.route('/', methods=['POST'])
 def crear_inscripcion():
-    data = request.json
-    id_inscripcion = InscripcionController.crear_inscripcion(data)
-    return jsonify({"mensaje": "Inscripcion creada", "id_inscripcion": id_inscripcion}), 201
+    data = request.get_json(silent=True) or {}
+    campos_requeridos = ['cliente_cedula', 'id_taller', 'id_estado']
+    campos_faltantes = [
+        campo for campo in campos_requeridos
+        if campo not in data or data[campo] in (None, '')
+    ]
+
+    if campos_faltantes:
+        return jsonify({
+            "mensaje": "Faltan campos obligatorios",
+            "campos": campos_faltantes
+        }), 400
+
+    try:
+        id_inscripcion = InscripcionController.crear_inscripcion(data)
+        return jsonify({"mensaje": "Inscripcion creada", "id_inscripcion": id_inscripcion}), 201
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 409
 
 
 @inscripcion_bp.route('/<int:id_inscripcion>', methods=['PUT'])

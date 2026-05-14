@@ -53,6 +53,24 @@ class UsuarioDAO:
         return None
 
     @staticmethod
+    def obtener_por_cedula_personal(cedula_personal):
+        conexion = Db.obtener_conexion()
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("""
+                SELECT id_usuario, username, password, id_rol, cedula_personal, activo, cedula_cliente
+                FROM usuarios
+                WHERE cedula_personal = %s
+            """, (cedula_personal,))
+            fila = cursor.fetchone()
+        finally:
+            conexion.close()
+
+        if fila:
+            return UsuarioDTO(*fila)
+        return None
+
+    @staticmethod
     def login(username, password):
         conexion = Db.obtener_conexion()
         try:

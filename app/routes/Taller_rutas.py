@@ -20,9 +20,24 @@ def obtener_taller(id_taller):
 
 @taller_bp.route('/', methods=['POST'])
 def crear_taller():
-    data = request.json
-    id_taller = TallerController.crear_taller(data)
-    return jsonify({"mensaje": "Taller creado", "id_taller": id_taller}), 201
+    data = request.get_json(silent=True) or {}
+    campos_requeridos = ['nombre', 'id_tipo_taller', 'fecha_inicio', 'fecha_fin', 'id_estado']
+    campos_faltantes = [
+        campo for campo in campos_requeridos
+        if campo not in data or data[campo] in (None, '')
+    ]
+
+    if campos_faltantes:
+        return jsonify({
+            "mensaje": "Faltan campos obligatorios",
+            "campos": campos_faltantes
+        }), 400
+
+    try:
+        id_taller = TallerController.crear_taller(data)
+        return jsonify({"mensaje": "Taller creado", "id_taller": id_taller}), 201
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 400
 
 
 @taller_bp.route('/<int:id_taller>', methods=['PUT'])

@@ -13,7 +13,7 @@ class PersonalController:
 
     @staticmethod
     def crear_persona(data):
-        PersonalServicio.crear_persona(data)
+        return PersonalServicio.crear_persona(data)
 
     @staticmethod
     def actualizar_persona(cedula, data):

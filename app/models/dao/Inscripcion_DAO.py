@@ -38,6 +38,21 @@ class InscripcionDAO:
         return None
 
     @staticmethod
+    def existe(cliente_cedula, id_taller):
+        conexion = Db.obtener_conexion()
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("""
+                SELECT id_inscripcion
+                FROM inscripcion
+                WHERE cliente_cedula = %s AND id_taller = %s
+                LIMIT 1
+            """, (cliente_cedula, id_taller))
+            return cursor.fetchone() is not None
+        finally:
+            conexion.close()
+
+    @staticmethod
     def crear(inscripcion_dto):
         conexion = Db.obtener_conexion()
         try:

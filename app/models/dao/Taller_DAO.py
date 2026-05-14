@@ -35,8 +35,11 @@ class TallerDAO:
         return None
 
     @staticmethod
-    def crear(taller_dto):
-        conexion = Db.obtener_conexion()
+    def crear(taller_dto, conexion=None):
+        cerrar_conexion = conexion is None
+        if cerrar_conexion:
+            conexion = Db.obtener_conexion()
+
         try:
             cursor = conexion.cursor()
             cursor.execute("""
@@ -49,10 +52,12 @@ class TallerDAO:
                 taller_dto.fecha_fin,
                 taller_dto.id_estado
             ))
-            conexion.commit()
+            if cerrar_conexion:
+                conexion.commit()
             return cursor.lastrowid
         finally:
-            conexion.close()
+            if cerrar_conexion:
+                conexion.close()
 
     @staticmethod
     def actualizar(id_taller, taller_dto):

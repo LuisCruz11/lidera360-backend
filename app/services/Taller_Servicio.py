@@ -1,5 +1,8 @@
 from app.models.dao.Taller_DAO import TallerDAO
 from app.models.dto.Taller_DTO import TallerDTO
+from app.models.dao.Taller_Personal_DAO import TallerPersonalDAO
+from app.models.dto.Taller_Personal_DTO import TallerPersonalDTO
+from app.database.Db import Db
 
 
 class TallerServicio:
@@ -26,7 +29,31 @@ class TallerServicio:
             data.get('fecha_fin'),
             data.get('id_estado')
         )
-        return TallerDAO.crear(taller)
+        personal_asignado = data.get('personal_asignado') or []
+
+        if not personal_asignado:
+            return TallerDAO.crear(taller)
+
+        conexion = Db.obtener_conexion()
+        try:
+            id_taller = TallerDAO.crear(taller, conexion)
+            for asignacion in personal_asignado:
+                if not asignacion.get('cedula_personal') or not asignacion.get('id_rol'):
+                    continue
+
+                TallerPersonalDAO.crear(TallerPersonalDTO(
+                    None,
+                    id_taller,
+                    asignacion.get('cedula_personal'),
+                    asignacion.get('id_rol')
+                ), conexion)
+            conexion.commit()
+            return id_taller
+        except Exception:
+            conexion.rollback()
+            raise
+        finally:
+            conexion.close()
 
     @staticmethod
     def actualizar_taller(id_taller, data):
