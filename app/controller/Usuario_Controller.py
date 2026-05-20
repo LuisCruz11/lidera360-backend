@@ -19,10 +19,6 @@ class UsuarioController:
         return UsuarioServicio.registrar_cliente_usuario(data)
 
     @staticmethod
-    def crear_admin_desde_personal(data):
-        return UsuarioServicio.crear_admin_desde_personal(data)
-
-    @staticmethod
     def actualizar_usuario(id_usuario, data):
         return UsuarioServicio.actualizar_usuario(id_usuario, data)
 
