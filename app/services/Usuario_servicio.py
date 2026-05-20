@@ -111,3 +111,49 @@ class UsuarioServicio:
     @staticmethod
     def eliminar_usuario(id_usuario):
         return UsuarioDAO.eliminar(id_usuario)
+
+    @staticmethod
+    def crear_admin_desde_personal(data):
+        # data debe contener: cedula_personal, username, password, opcional: id_rol, activo
+        required = ['cedula_personal', 'username', 'password']
+        for campo in required:
+            if campo not in data or not data[campo]:
+                raise ValueError(f"Falta el campo requerido: {campo}")
+
+        cedula = data['cedula_personal']
+        username = data['username']
+        password = data['password']
+        id_rol = data.get('id_rol', 5)  # 5 = Admin según attachments
+        activo = data.get('activo', 1)
+
+        if UsuarioDAO.obtener_por_username(username):
+            raise ValueError("El username ya está registrado")
+
+        if UsuarioDAO.obtener_por_cedula_personal(cedula):
+            raise ValueError("El personal ya tiene un usuario asignado")
+
+        password_cifrado = bcrypt.hashpw(
+            password.encode('utf-8'),
+            bcrypt.gensalt()
+        )
+
+        usuario = UsuarioDTO(
+            None,
+            username,
+            password_cifrado.decode('utf-8'),
+            id_rol,
+            cedula,
+            activo,
+            None
+        )
+
+        conexion = Db.obtener_conexion()
+        try:
+            id_usuario = UsuarioDAO.crear(usuario, conexion)
+            conexion.commit()
+            return {"id_usuario": id_usuario}
+        except Exception:
+            conexion.rollback()
+            raise
+        finally:
+            conexion.close()

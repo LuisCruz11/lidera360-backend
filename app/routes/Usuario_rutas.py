@@ -69,6 +69,24 @@ def registro():
 
     return jsonify({"mensaje": "Usuario registrado correctamente"}), 201
 
+
+@usuario_bp.route('/create_admin', methods=['POST'])
+def create_admin():
+    data = request.get_json(silent=True) or {}
+
+    campos_requeridos = ['cedula_personal', 'username', 'password']
+    campos_faltantes = [c for c in campos_requeridos if c not in data or data[c] in (None, '')]
+    if campos_faltantes:
+        return jsonify({"mensaje": "Faltan campos obligatorios", "campos": campos_faltantes}), 400
+
+    try:
+        resultado = UsuarioController.crear_admin_desde_personal(data)
+        return jsonify({"mensaje": "Admin creado correctamente", **resultado}), 201
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 409
+    except Exception as e:
+        return jsonify({"mensaje": "Error creando admin", "error": str(e)}), 500
+
 @usuario_bp.route('/<int:id_usuario>', methods=['PUT'])
 def actualizar_usuario(id_usuario):
     data = request.json
