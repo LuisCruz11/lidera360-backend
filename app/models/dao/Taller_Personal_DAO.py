@@ -90,3 +90,18 @@ class TallerPersonalDAO:
             return cursor.rowcount > 0
         finally:
             conexion.close()
+
+    @staticmethod
+    def eliminar_por_taller(id_taller, conexion=None):
+        cerrar_conexion = conexion is None
+        if cerrar_conexion:
+            conexion = Db.obtener_conexion()
+
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("DELETE FROM taller_personal WHERE id_taller = %s", (id_taller,))
+            if cerrar_conexion:
+                conexion.commit()
+        finally:
+            if cerrar_conexion:
+                conexion.close()

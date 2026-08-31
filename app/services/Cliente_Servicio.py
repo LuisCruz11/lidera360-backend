@@ -82,7 +82,32 @@ class ClienteServicio:
             data.get('id_estado')
         )
 
-        return ClienteDAO.actualizar(cedula, cliente)
+        id_tipo_taller = data.get('id_tipo_taller')
+
+        if not id_tipo_taller:
+            return ClienteDAO.actualizar(cedula, cliente)
+
+        conexion = Db.obtener_conexion()
+        try:
+            actualizado = ClienteDAO.actualizar(cedula, cliente, conexion)
+
+            progreso_existente = ProgresoClienteDAO.obtener_por_cliente(cedula)
+            if progreso_existente:
+                ProgresoClienteDAO.actualizar(
+                    progreso_existente.id_progreso,
+                    ProgresoClienteDTO(progreso_existente.id_progreso, cedula, id_tipo_taller),
+                    conexion
+                )
+            else:
+                ProgresoClienteDAO.crear(ProgresoClienteDTO(None, cedula, id_tipo_taller), conexion)
+
+            conexion.commit()
+            return actualizado
+        except Exception:
+            conexion.rollback()
+            raise
+        finally:
+            conexion.close()
 
     @staticmethod
     def eliminar_cliente(cedula):

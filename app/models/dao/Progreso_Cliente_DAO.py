@@ -75,8 +75,11 @@ class ProgresoClienteDAO:
                 conexion.close()
 
     @staticmethod
-    def actualizar(id_progreso, progreso_dto):
-        conexion = Db.obtener_conexion()
+    def actualizar(id_progreso, progreso_dto, conexion=None):
+        cerrar_conexion = conexion is None
+        if cerrar_conexion:
+            conexion = Db.obtener_conexion()
+
         try:
             cursor = conexion.cursor()
             cursor.execute("""
@@ -88,10 +91,12 @@ class ProgresoClienteDAO:
                 progreso_dto.id_tipo_taller,
                 id_progreso
             ))
-            conexion.commit()
+            if cerrar_conexion:
+                conexion.commit()
             return cursor.rowcount > 0
         finally:
-            conexion.close()
+            if cerrar_conexion:
+                conexion.close()
 
     @staticmethod
     def eliminar(id_progreso):

@@ -291,8 +291,11 @@ class ClienteDAO:
                 conexion.close()
 
     @staticmethod
-    def actualizar(cedula, cliente_dto):
-        conexion = Db.obtener_conexion()
+    def actualizar(cedula, cliente_dto, conexion=None):
+        cerrar_conexion = conexion is None
+        if cerrar_conexion:
+            conexion = Db.obtener_conexion()
+
         try:
             cursor = conexion.cursor()
             cursor.execute("""
@@ -310,10 +313,12 @@ class ClienteDAO:
                 cliente_dto.id_estado,
                 cedula
             ))
-            conexion.commit()
+            if cerrar_conexion:
+                conexion.commit()
             return cursor.rowcount > 0
         finally:
-            conexion.close()
+            if cerrar_conexion:
+                conexion.close()
 
     @staticmethod
     def eliminar(cedula):

@@ -65,7 +65,31 @@ class TallerServicio:
             data.get('fecha_fin'),
             data.get('id_estado')
         )
-        return TallerDAO.actualizar(id_taller, taller)
+
+        if 'personal_asignado' not in data:
+            return TallerDAO.actualizar(id_taller, taller)
+
+        conexion = Db.obtener_conexion()
+        try:
+            actualizado = TallerDAO.actualizar(id_taller, taller, conexion)
+            TallerPersonalDAO.eliminar_por_taller(id_taller, conexion)
+            for asignacion in data.get('personal_asignado') or []:
+                if not asignacion.get('cedula_personal') or not asignacion.get('id_rol'):
+                    continue
+
+                TallerPersonalDAO.crear(TallerPersonalDTO(
+                    None,
+                    id_taller,
+                    asignacion.get('cedula_personal'),
+                    asignacion.get('id_rol')
+                ), conexion)
+            conexion.commit()
+            return actualizado
+        except Exception:
+            conexion.rollback()
+            raise
+        finally:
+            conexion.close()
 
     @staticmethod
     def eliminar_taller(id_taller):
