@@ -38,14 +38,14 @@ class TallerServicio:
         try:
             id_taller = TallerDAO.crear(taller, conexion)
             for asignacion in personal_asignado:
-                if not asignacion.get('cedula_personal') or not asignacion.get('id_rol'):
+                if not asignacion.get('cedula_personal') or not asignacion.get('rol_en_taller'):
                     continue
 
                 TallerPersonalDAO.crear(TallerPersonalDTO(
                     None,
                     id_taller,
                     asignacion.get('cedula_personal'),
-                    asignacion.get('id_rol')
+                    asignacion.get('rol_en_taller')
                 ), conexion)
             conexion.commit()
             return id_taller
@@ -74,14 +74,14 @@ class TallerServicio:
             actualizado = TallerDAO.actualizar(id_taller, taller, conexion)
             TallerPersonalDAO.eliminar_por_taller(id_taller, conexion)
             for asignacion in data.get('personal_asignado') or []:
-                if not asignacion.get('cedula_personal') or not asignacion.get('id_rol'):
+                if not asignacion.get('cedula_personal') or not asignacion.get('rol_en_taller'):
                     continue
 
                 TallerPersonalDAO.crear(TallerPersonalDTO(
                     None,
                     id_taller,
                     asignacion.get('cedula_personal'),
-                    asignacion.get('id_rol')
+                    asignacion.get('rol_en_taller')
                 ), conexion)
             conexion.commit()
             return actualizado
