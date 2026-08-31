@@ -1,5 +1,6 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager, verify_jwt_in_request
 from app.Config import Config
 
 from app.routes.Cliente_rutas import cliente_bp
@@ -14,12 +15,30 @@ from app.routes.Taller_Personal_rutas import taller_personal_bp
 from app.routes.Progreso_Cliente_rutas import progreso_cliente_bp
 from app.routes.Auditoria_rutas import auditoria_bp
 
+RUTAS_PUBLICAS = {
+    ('/api/usuarios/login', 'POST'),
+    ('/api/usuarios/registro', 'POST'),
+}
+
+
 def crear_app():
 
     app = Flask(__name__)
     app.config.from_object(Config)
 
     CORS(app)
+    JWTManager(app)
+
+    @app.before_request
+    def requerir_autenticacion():
+        if request.method == 'OPTIONS':
+            return None
+        if (request.path, request.method) in RUTAS_PUBLICAS:
+            return None
+        try:
+            verify_jwt_in_request()
+        except Exception:
+            return jsonify({"mensaje": "Token de acceso inválido o no proporcionado"}), 401
 
     app.register_blueprint(cliente_bp, url_prefix='/api/clientes')
     app.register_blueprint(usuario_bp, url_prefix='/api/usuarios')

@@ -6,6 +6,7 @@ from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
 from app.models.dto.Progreso_Cliente_DTO import ProgresoClienteDTO
 from app.utils.email_service import enviar_correo_registro
 from app.database.Db import Db
+from flask_jwt_extended import create_access_token
 import bcrypt
 
 class UsuarioServicio:
@@ -30,10 +31,14 @@ class UsuarioServicio:
             raise ValueError("No se encontró ningún usuario con ese nombre de usuario.")
         
         usuario = UsuarioDAO.login(data['username'], data['password'])
-        
+
         if usuario:
-            return usuario.to_dict()
-        
+            token = create_access_token(
+                identity=str(usuario.id_usuario),
+                additional_claims={"id_rol": usuario.id_rol, "username": usuario.username}
+            )
+            return {"token": token, "usuario": usuario.to_dict()}
+
         raise ValueError("Credenciales incorrectas. Verifica tu contraseña.")
 
     @staticmethod
