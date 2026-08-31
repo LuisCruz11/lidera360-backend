@@ -325,8 +325,19 @@ class ClienteDAO:
         conexion = Db.obtener_conexion()
         try:
             cursor = conexion.cursor()
+            cursor.execute("DELETE FROM inscripcion WHERE cliente_cedula = %s", (cedula,))
+            cursor.execute("DELETE FROM progreso_cliente WHERE cliente_cedula = %s", (cedula,))
             cursor.execute("DELETE FROM clientes WHERE cedula = %s", (cedula,))
             conexion.commit()
             return cursor.rowcount > 0
+        except pymysql.err.IntegrityError:
+            conexion.rollback()
+            raise ValueError(
+                "No se puede eliminar el cliente porque tiene registros asociados "
+                "que no se pudieron eliminar automáticamente."
+            )
+        except Exception:
+            conexion.rollback()
+            raise
         finally:
             conexion.close()

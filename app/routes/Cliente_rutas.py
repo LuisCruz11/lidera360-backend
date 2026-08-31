@@ -70,7 +70,10 @@ def actualizar_cliente(cedula):
 
 @cliente_bp.route('/<cedula>', methods=['DELETE'])
 def eliminar_cliente(cedula):
-    eliminado = ClienteController.eliminar_cliente(cedula)
+    try:
+        eliminado = ClienteController.eliminar_cliente(cedula)
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 409
     if eliminado:
         return jsonify({"mensaje": "Cliente eliminado"})
     return jsonify({"mensaje": "Cliente no encontrado"}), 404
