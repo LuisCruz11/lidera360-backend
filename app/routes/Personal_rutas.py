@@ -42,8 +42,23 @@ def crear_persona():
 
 @personal_bp.route('/<cedula>', methods=['PUT'])
 def actualizar_persona(cedula):
-    data = request.json
-    actualizado = PersonalController.actualizar_persona(cedula, data)
+    data = request.get_json(silent=True) or {}
+    campos_requeridos = ['nombres', 'apellidos', 'correo', 'telefono', 'id_rol']
+    campos_faltantes = [
+        campo for campo in campos_requeridos
+        if campo not in data or data[campo] in (None, '')
+    ]
+
+    if campos_faltantes:
+        return jsonify({
+            "mensaje": "Faltan campos obligatorios",
+            "campos": campos_faltantes
+        }), 400
+
+    try:
+        actualizado = PersonalController.actualizar_persona(cedula, data)
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 400
     if actualizado:
         return jsonify({"mensaje": "Personal actualizado"})
     return jsonify({"mensaje": "Personal no encontrado"}), 404

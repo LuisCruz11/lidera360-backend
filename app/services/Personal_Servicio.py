@@ -3,6 +3,13 @@ from app.models.dto.Personal_DTO import PersonalDTO
 from app.models.dao.Usuario_DAO import UsuarioDAO
 from app.models.dto.Usuario_DTO import UsuarioDTO
 from app.database.Db import Db
+from app.utils.validaciones import (
+    validar_cedula,
+    validar_correo,
+    validar_nombre,
+    validar_password,
+    validar_telefono,
+)
 import bcrypt
 
 
@@ -22,6 +29,12 @@ class PersonalServicio:
 
     @staticmethod
     def crear_persona(data):
+        validar_cedula(data['cedula'])
+        validar_nombre(data.get('nombres'), "El nombre")
+        validar_nombre(data.get('apellidos'), "El apellido")
+        validar_telefono(data.get('telefono'), obligatorio=True)
+        validar_correo(data.get('correo'), obligatorio=True)
+
         if PersonalDAO.obtener_por_cedula(data['cedula']):
             raise ValueError("La cedula ya esta registrada en personal")
 
@@ -43,6 +56,8 @@ class PersonalServicio:
 
         if not username or not password:
             raise ValueError("Username y password son obligatorios para crear el usuario")
+
+        validar_password(password)
 
         if UsuarioDAO.obtener_por_username(username):
             raise ValueError("El usuario ya esta registrado")
@@ -79,6 +94,11 @@ class PersonalServicio:
 
     @staticmethod
     def actualizar_persona(cedula, data):
+        validar_nombre(data.get('nombres'), "El nombre")
+        validar_nombre(data.get('apellidos'), "El apellido")
+        validar_telefono(data.get('telefono'), obligatorio=True)
+        validar_correo(data.get('correo'), obligatorio=True)
+
         persona = PersonalDTO(
             cedula,
             data.get('nombres'),

@@ -62,8 +62,29 @@ def crear_cliente():
 
 @cliente_bp.route('/<cedula>', methods=['PUT'])
 def actualizar_cliente(cedula):
-    data = request.json
-    actualizado = ClienteController.actualizar_cliente(cedula, data)
+    data = request.get_json(silent=True) or {}
+    campos_requeridos = ['nombres', 'apellidos', 'sexo', 'edad', 'id_estado']
+    campos_faltantes = [
+        campo for campo in campos_requeridos
+        if campo not in data or data[campo] in (None, '')
+    ]
+
+    if campos_faltantes:
+        return jsonify({
+            "mensaje": "Faltan campos obligatorios",
+            "campos": campos_faltantes
+        }), 400
+
+    sexos_validos = ['M', 'F', 'Otro']
+    if data['sexo'] not in sexos_validos:
+        return jsonify({
+            "mensaje": "El sexo debe ser M, F u Otro"
+        }), 400
+
+    try:
+        actualizado = ClienteController.actualizar_cliente(cedula, data)
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 400
     if actualizado:
         return jsonify({"mensaje": "Cliente actualizado"})
     return jsonify({"mensaje": "Cliente no encontrado"}), 404

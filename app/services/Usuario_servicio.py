@@ -6,6 +6,13 @@ from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
 from app.models.dto.Progreso_Cliente_DTO import ProgresoClienteDTO
 from app.utils.email_service import enviar_correo_registro
 from app.database.Db import Db
+from app.utils.validaciones import (
+    validar_cedula,
+    validar_correo,
+    validar_nombre,
+    validar_password,
+    validar_telefono,
+)
 from flask_jwt_extended import create_access_token
 import bcrypt
 
@@ -43,6 +50,12 @@ class UsuarioServicio:
 
     @staticmethod
     def registrar_cliente_usuario(data):
+        validar_cedula(data['cedula'])
+        validar_nombre(data['nombres'], "El nombre")
+        validar_nombre(data['apellidos'], "El apellido")
+        validar_telefono(data['telefono'], obligatorio=True)
+        validar_correo(data['correo'], obligatorio=True)
+        validar_password(data['password'])
 
         if ClienteDAO.obtener_por_cedula(data['cedula']):
             raise ValueError("La cedula ya esta registrada")
@@ -108,8 +121,7 @@ class UsuarioServicio:
         if not password_actual or not password_nueva:
             raise ValueError("La contraseña actual y la nueva son obligatorias")
 
-        if len(password_nueva) < 8:
-            raise ValueError("La nueva contraseña debe tener al menos 8 caracteres")
+        validar_password(password_nueva)
 
         usuario = UsuarioDAO.obtener_por_id(id_usuario)
         if not usuario:
@@ -126,14 +138,18 @@ class UsuarioServicio:
 
     @staticmethod
     def actualizar_usuario(id_usuario, data):
+        usuario_actual = UsuarioDAO.obtener_por_id(id_usuario)
+        if not usuario_actual:
+            return False
+
         usuario = UsuarioDTO(
             id_usuario,
-            data['username'],
-            data['password'],
-            data.get('id_rol'),
-            data.get('cedula_personal'),
-            data.get('activo', True),
-            data.get('cedula_cliente')
+            data.get('username', usuario_actual.username),
+            usuario_actual.password,
+            data.get('id_rol', usuario_actual.id_rol),
+            data.get('cedula_personal', usuario_actual.cedula_personal),
+            data.get('activo', usuario_actual.activo),
+            data.get('cedula_cliente', usuario_actual.cedula_cliente)
         )
         return UsuarioDAO.actualizar(id_usuario, usuario)
 

@@ -5,6 +5,11 @@ from app.models.dto.Taller_Personal_DTO import TallerPersonalDTO
 from app.database.Db import Db
 
 
+def _validar_fechas(fecha_inicio, fecha_fin):
+    if fecha_inicio and fecha_fin and fecha_fin < fecha_inicio:
+        raise ValueError("La fecha de fin no puede ser anterior a la fecha de inicio")
+
+
 class TallerServicio:
 
     @staticmethod
@@ -21,6 +26,8 @@ class TallerServicio:
 
     @staticmethod
     def crear_taller(data):
+        _validar_fechas(data.get('fecha_inicio'), data.get('fecha_fin'))
+
         taller = TallerDTO(
             None,
             data['nombre'],
@@ -57,6 +64,8 @@ class TallerServicio:
 
     @staticmethod
     def actualizar_taller(id_taller, data):
+        _validar_fechas(data.get('fecha_inicio'), data.get('fecha_fin'))
+
         taller = TallerDTO(
             id_taller,
             data['nombre'],

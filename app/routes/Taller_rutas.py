@@ -42,8 +42,23 @@ def crear_taller():
 
 @taller_bp.route('/<int:id_taller>', methods=['PUT'])
 def actualizar_taller(id_taller):
-    data = request.json
-    actualizado = TallerController.actualizar_taller(id_taller, data)
+    data = request.get_json(silent=True) or {}
+    campos_requeridos = ['nombre', 'id_tipo_taller', 'fecha_inicio', 'fecha_fin', 'id_estado']
+    campos_faltantes = [
+        campo for campo in campos_requeridos
+        if campo not in data or data[campo] in (None, '')
+    ]
+
+    if campos_faltantes:
+        return jsonify({
+            "mensaje": "Faltan campos obligatorios",
+            "campos": campos_faltantes
+        }), 400
+
+    try:
+        actualizado = TallerController.actualizar_taller(id_taller, data)
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 400
     if actualizado:
         return jsonify({"mensaje": "Taller actualizado"})
     return jsonify({"mensaje": "Taller no encontrado"}), 404

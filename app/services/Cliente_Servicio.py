@@ -5,6 +5,14 @@ from app.models.dto.Progreso_Cliente_DTO import ProgresoClienteDTO
 from app.models.dao.Usuario_DAO import UsuarioDAO
 from app.models.dto.Usuario_DTO import UsuarioDTO
 from app.database.Db import Db
+from app.utils.validaciones import (
+    validar_cedula,
+    validar_correo,
+    validar_edad,
+    validar_nombre,
+    validar_password,
+    validar_telefono,
+)
 import bcrypt
 
 ID_ROL_CLIENTE = 4
@@ -37,17 +45,26 @@ class ClienteServicio:
 
     @staticmethod
     def crear_cliente(data):
-        if ClienteDAO.obtener_por_cedula(data['cedula']):
-            raise ValueError("La cedula ya esta registrada")
-
-        if data.get('correo') and ClienteDAO.obtener_por_correo(data.get('correo')):
-            raise ValueError("El correo ya esta registrado")
+        validar_cedula(data['cedula'])
+        validar_nombre(data['nombres'], "El nombre")
+        validar_nombre(data['apellidos'], "El apellido")
+        validar_telefono(data.get('telefono'))
+        validar_correo(data.get('correo'))
+        validar_edad(data.get('edad'))
 
         username = data.get('username')
         password = data.get('password')
 
         if not username or not password:
             raise ValueError("Username y password son obligatorios para crear el cliente")
+
+        validar_password(password)
+
+        if ClienteDAO.obtener_por_cedula(data['cedula']):
+            raise ValueError("La cedula ya esta registrada")
+
+        if data.get('correo') and ClienteDAO.obtener_por_correo(data.get('correo')):
+            raise ValueError("El correo ya esta registrado")
 
         if UsuarioDAO.obtener_por_username(username):
             raise ValueError("El usuario ya esta registrado")
@@ -98,6 +115,12 @@ class ClienteServicio:
 
     @staticmethod
     def actualizar_cliente(cedula, data):
+        validar_nombre(data['nombres'], "El nombre")
+        validar_nombre(data['apellidos'], "El apellido")
+        validar_telefono(data.get('telefono'))
+        validar_correo(data.get('correo'))
+        validar_edad(data.get('edad'))
+
         cliente = ClienteDTO(
             cedula,
             data['nombres'],
