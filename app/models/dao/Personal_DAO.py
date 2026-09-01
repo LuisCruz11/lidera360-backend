@@ -1,5 +1,6 @@
 from app.database.Db import Db
 from app.models.dto.Personal_DTO import PersonalDTO
+import pymysql
 
 
 class PersonalDAO:
@@ -86,8 +87,24 @@ class PersonalDAO:
         conexion = Db.obtener_conexion()
         try:
             cursor = conexion.cursor()
+            cursor.execute("SELECT id_usuario FROM usuarios WHERE cedula_personal = %s", (cedula,))
+            usuario = cursor.fetchone()
+
+            cursor.execute("DELETE FROM taller_personal WHERE cedula_personal = %s", (cedula,))
+            if usuario:
+                cursor.execute("DELETE FROM auditoria WHERE id_usuario = %s", (usuario[0],))
+                cursor.execute("DELETE FROM usuarios WHERE id_usuario = %s", (usuario[0],))
             cursor.execute("DELETE FROM personal WHERE cedula = %s", (cedula,))
             conexion.commit()
             return cursor.rowcount > 0
+        except pymysql.err.IntegrityError:
+            conexion.rollback()
+            raise ValueError(
+                "No se puede eliminar el personal porque tiene registros asociados "
+                "que no se pudieron eliminar automáticamente."
+            )
+        except Exception:
+            conexion.rollback()
+            raise
         finally:
             conexion.close()

@@ -51,7 +51,10 @@ def actualizar_persona(cedula):
 
 @personal_bp.route('/<cedula>', methods=['DELETE'])
 def eliminar_persona(cedula):
-    eliminado = PersonalController.eliminar_persona(cedula)
+    try:
+        eliminado = PersonalController.eliminar_persona(cedula)
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 409
     if eliminado:
         return jsonify({"mensaje": "Personal eliminado"})
     return jsonify({"mensaje": "Personal no encontrado"}), 404
