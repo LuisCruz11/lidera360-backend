@@ -80,7 +80,10 @@ def actualizar_usuario(id_usuario):
 
 @usuario_bp.route('/<int:id_usuario>', methods=['DELETE'])
 def eliminar_usuario(id_usuario):
-    eliminado = UsuarioController.eliminar_usuario(id_usuario)
+    try:
+        eliminado = UsuarioController.eliminar_usuario(id_usuario)
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 409
     if eliminado:
         return jsonify({"mensaje": "Usuario eliminado"})
     return jsonify({"mensaje": "Usuario no encontrado"}), 404

@@ -1,6 +1,7 @@
 from app.database.Db import Db
 from app.models.dto.Usuario_DTO import UsuarioDTO
 import bcrypt
+import pymysql
 
 class UsuarioDAO:
 
@@ -148,8 +149,18 @@ class UsuarioDAO:
         conexion = Db.obtener_conexion()
         try:
             cursor = conexion.cursor()
+            cursor.execute("DELETE FROM auditoria WHERE id_usuario = %s", (id_usuario,))
             cursor.execute("DELETE FROM usuarios WHERE id_usuario = %s", (id_usuario,))
             conexion.commit()
             return cursor.rowcount > 0
+        except pymysql.err.IntegrityError:
+            conexion.rollback()
+            raise ValueError(
+                "No se puede eliminar el usuario porque tiene registros asociados "
+                "que no se pudieron eliminar automáticamente."
+            )
+        except Exception:
+            conexion.rollback()
+            raise
         finally:
             conexion.close()

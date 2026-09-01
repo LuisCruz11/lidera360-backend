@@ -325,8 +325,14 @@ class ClienteDAO:
         conexion = Db.obtener_conexion()
         try:
             cursor = conexion.cursor()
+            cursor.execute("SELECT id_usuario FROM usuarios WHERE cedula_cliente = %s", (cedula,))
+            usuario = cursor.fetchone()
+
             cursor.execute("DELETE FROM inscripcion WHERE cliente_cedula = %s", (cedula,))
             cursor.execute("DELETE FROM progreso_cliente WHERE cliente_cedula = %s", (cedula,))
+            if usuario:
+                cursor.execute("DELETE FROM auditoria WHERE id_usuario = %s", (usuario[0],))
+                cursor.execute("DELETE FROM usuarios WHERE id_usuario = %s", (usuario[0],))
             cursor.execute("DELETE FROM clientes WHERE cedula = %s", (cedula,))
             conexion.commit()
             return cursor.rowcount > 0
