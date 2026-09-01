@@ -36,7 +36,7 @@ def inscribir_cliente_en_taller(cedula):
 @cliente_bp.route('/', methods=['POST'])
 def crear_cliente():
     data = request.get_json(silent=True) or {}
-    campos_requeridos = ['cedula', 'nombres', 'apellidos', 'sexo', 'edad', 'id_estado']
+    campos_requeridos = ['cedula', 'nombres', 'apellidos', 'sexo', 'edad', 'id_estado', 'username', 'password']
     campos_faltantes = [
         campo for campo in campos_requeridos
         if campo not in data or data[campo] in (None, '')

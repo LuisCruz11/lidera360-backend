@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import get_jwt_identity
 from app.controller.Usuario_Controller import UsuarioController
 
 usuario_bp = Blueprint('usuario_bp', __name__)
@@ -77,6 +78,18 @@ def actualizar_usuario(id_usuario):
     if actualizado:
         return jsonify({"mensaje": "Usuario actualizado"})
     return jsonify({"mensaje": "Usuario no encontrado"}), 404
+
+@usuario_bp.route('/<int:id_usuario>/password', methods=['PUT'])
+def cambiar_password(id_usuario):
+    if get_jwt_identity() != str(id_usuario):
+        return jsonify({"mensaje": "No autorizado para cambiar esta contraseña"}), 403
+
+    data = request.get_json(silent=True) or {}
+    try:
+        UsuarioController.cambiar_password(id_usuario, data)
+        return jsonify({"mensaje": "Contraseña actualizada correctamente"})
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 400
 
 @usuario_bp.route('/<int:id_usuario>', methods=['DELETE'])
 def eliminar_usuario(id_usuario):

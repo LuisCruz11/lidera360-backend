@@ -145,6 +145,20 @@ class UsuarioDAO:
             conexion.close()
 
     @staticmethod
+    def actualizar_password(id_usuario, password_cifrado):
+        conexion = Db.obtener_conexion()
+        try:
+            cursor = conexion.cursor()
+            cursor.execute(
+                "UPDATE usuarios SET password = %s WHERE id_usuario = %s",
+                (password_cifrado, id_usuario)
+            )
+            conexion.commit()
+            return cursor.rowcount > 0
+        finally:
+            conexion.close()
+
+    @staticmethod
     def eliminar(id_usuario):
         conexion = Db.obtener_conexion()
         try:

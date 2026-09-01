@@ -2,7 +2,12 @@ from app.models.dao.Cliente_DAO import ClienteDAO
 from app.models.dto.Cliente_DTO import ClienteDTO
 from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
 from app.models.dto.Progreso_Cliente_DTO import ProgresoClienteDTO
+from app.models.dao.Usuario_DAO import UsuarioDAO
+from app.models.dto.Usuario_DTO import UsuarioDTO
 from app.database.Db import Db
+import bcrypt
+
+ID_ROL_CLIENTE = 4
 
 class ClienteServicio:
 
@@ -38,6 +43,15 @@ class ClienteServicio:
         if data.get('correo') and ClienteDAO.obtener_por_correo(data.get('correo')):
             raise ValueError("El correo ya esta registrado")
 
+        username = data.get('username')
+        password = data.get('password')
+
+        if not username or not password:
+            raise ValueError("Username y password son obligatorios para crear el cliente")
+
+        if UsuarioDAO.obtener_por_username(username):
+            raise ValueError("El usuario ya esta registrado")
+
         cliente = ClienteDTO(
             data['cedula'],
             data['nombres'],
@@ -49,19 +63,32 @@ class ClienteServicio:
             data.get('id_estado')
         )
 
-        id_tipo_taller = data.get('id_tipo_taller')
+        password_cifrado = bcrypt.hashpw(
+            password.encode('utf-8'),
+            bcrypt.gensalt()
+        )
 
-        if not id_tipo_taller:
-            ClienteDAO.crear(cliente)
-            return
+        usuario = UsuarioDTO(
+            None,
+            username,
+            password_cifrado.decode('utf-8'),
+            ID_ROL_CLIENTE,
+            None,
+            True,
+            data['cedula']
+        )
+
+        id_tipo_taller = data.get('id_tipo_taller')
 
         conexion = Db.obtener_conexion()
         try:
             ClienteDAO.crear(cliente, conexion)
-            ProgresoClienteDAO.crear(
-                ProgresoClienteDTO(None, data['cedula'], id_tipo_taller),
-                conexion
-            )
+            UsuarioDAO.crear(usuario, conexion)
+            if id_tipo_taller:
+                ProgresoClienteDAO.crear(
+                    ProgresoClienteDTO(None, data['cedula'], id_tipo_taller),
+                    conexion
+                )
             conexion.commit()
         except Exception:
             conexion.rollback()

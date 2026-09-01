@@ -23,5 +23,9 @@ class UsuarioController:
         return UsuarioServicio.actualizar_usuario(id_usuario, data)
 
     @staticmethod
+    def cambiar_password(id_usuario, data):
+        return UsuarioServicio.cambiar_password(id_usuario, data)
+
+    @staticmethod
     def eliminar_usuario(id_usuario):
         return UsuarioServicio.eliminar_usuario(id_usuario)

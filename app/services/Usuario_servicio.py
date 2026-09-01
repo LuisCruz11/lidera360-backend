@@ -101,6 +101,30 @@ class UsuarioServicio:
         return correo_enviado
 
     @staticmethod
+    def cambiar_password(id_usuario, data):
+        password_actual = data.get('password_actual')
+        password_nueva = data.get('password_nueva')
+
+        if not password_actual or not password_nueva:
+            raise ValueError("La contraseña actual y la nueva son obligatorias")
+
+        if len(password_nueva) < 8:
+            raise ValueError("La nueva contraseña debe tener al menos 8 caracteres")
+
+        usuario = UsuarioDAO.obtener_por_id(id_usuario)
+        if not usuario:
+            raise ValueError("Usuario no encontrado")
+
+        if not bcrypt.checkpw(password_actual.encode('utf-8'), usuario.password.encode('utf-8')):
+            raise ValueError("La contraseña actual no es correcta")
+
+        password_cifrado = bcrypt.hashpw(
+            password_nueva.encode('utf-8'),
+            bcrypt.gensalt()
+        )
+        UsuarioDAO.actualizar_password(id_usuario, password_cifrado.decode('utf-8'))
+
+    @staticmethod
     def actualizar_usuario(id_usuario, data):
         usuario = UsuarioDTO(
             id_usuario,
