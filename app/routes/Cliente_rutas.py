@@ -1,13 +1,16 @@
 from flask import Blueprint, request, jsonify
 from app.controller.Cliente_Controller import ClienteController
+from app.utils.auth import ID_ROL_COORDINADOR, requiere_propio_cliente, requiere_roles
 
 cliente_bp = Blueprint('cliente_bp', __name__)
 
 @cliente_bp.route('/', methods=['GET'])
+@requiere_roles(ID_ROL_COORDINADOR)
 def obtener_clientes():
     return jsonify(ClienteController.obtener_clientes())
 
 @cliente_bp.route('/<cedula>', methods=['GET'])
+@requiere_propio_cliente
 def obtener_cliente(cedula):
     cliente = ClienteController.obtener_cliente(cedula)
     if cliente:
@@ -15,6 +18,7 @@ def obtener_cliente(cedula):
     return jsonify({"mensaje": "Cliente no encontrado"}), 404
 
 @cliente_bp.route('/<cedula>/panel', methods=['GET'])
+@requiere_propio_cliente
 def obtener_panel_cliente(cedula):
     panel = ClienteController.obtener_panel_cliente(cedula)
     if panel:
@@ -22,6 +26,7 @@ def obtener_panel_cliente(cedula):
     return jsonify({"mensaje": "Cliente no encontrado"}), 404
 
 @cliente_bp.route('/<cedula>/inscripciones', methods=['POST'])
+@requiere_propio_cliente
 def inscribir_cliente_en_taller(cedula):
     data = request.get_json(silent=True) or {}
     try:
@@ -34,6 +39,7 @@ def inscribir_cliente_en_taller(cedula):
         return jsonify({"mensaje": str(error)}), 400
 
 @cliente_bp.route('/', methods=['POST'])
+@requiere_roles(ID_ROL_COORDINADOR)
 def crear_cliente():
     data = request.get_json(silent=True) or {}
     campos_requeridos = ['cedula', 'nombres', 'apellidos', 'sexo', 'edad', 'id_estado', 'username', 'password']
@@ -61,6 +67,7 @@ def crear_cliente():
         return jsonify({"mensaje": str(error)}), 409
 
 @cliente_bp.route('/<cedula>', methods=['PUT'])
+@requiere_roles(ID_ROL_COORDINADOR)
 def actualizar_cliente(cedula):
     data = request.get_json(silent=True) or {}
     campos_requeridos = ['nombres', 'apellidos', 'sexo', 'edad', 'id_estado']
@@ -90,6 +97,7 @@ def actualizar_cliente(cedula):
     return jsonify({"mensaje": "Cliente no encontrado"}), 404
 
 @cliente_bp.route('/<cedula>', methods=['DELETE'])
+@requiere_roles(ID_ROL_COORDINADOR)
 def eliminar_cliente(cedula):
     try:
         eliminado = ClienteController.eliminar_cliente(cedula)

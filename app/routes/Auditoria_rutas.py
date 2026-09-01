@@ -1,8 +1,15 @@
 from flask import Blueprint, request, jsonify
 from app.controller.Auditoria_Controller import AuditoriaController
+from app.utils.auth import ID_ROL_COORDINADOR, requiere_roles
 
 
 auditoria_bp = Blueprint('auditoria_bp', __name__)
+
+
+@auditoria_bp.before_request
+@requiere_roles(ID_ROL_COORDINADOR)
+def _restringir_auditoria():
+    return None
 
 
 @auditoria_bp.route('/', methods=['GET'])

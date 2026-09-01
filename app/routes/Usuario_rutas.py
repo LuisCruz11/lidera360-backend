@@ -1,14 +1,17 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity
 from app.controller.Usuario_Controller import UsuarioController
+from app.utils.auth import ID_ROL_COORDINADOR, requiere_propio_usuario, requiere_roles
 
 usuario_bp = Blueprint('usuario_bp', __name__)
 
 @usuario_bp.route('/', methods=['GET'])
+@requiere_roles(ID_ROL_COORDINADOR)
 def obtener_usuarios():
     return jsonify(UsuarioController.obtener_usuarios())
 
 @usuario_bp.route('/<int:id_usuario>', methods=['GET'])
+@requiere_propio_usuario
 def obtener_usuario(id_usuario):
     usuario = UsuarioController.obtener_usuario(id_usuario)
     if usuario:
@@ -72,6 +75,7 @@ def registro():
 
 
 @usuario_bp.route('/<int:id_usuario>', methods=['PUT'])
+@requiere_roles(ID_ROL_COORDINADOR)
 def actualizar_usuario(id_usuario):
     data = request.json
     actualizado = UsuarioController.actualizar_usuario(id_usuario, data)
@@ -92,6 +96,7 @@ def cambiar_password(id_usuario):
         return jsonify({"mensaje": str(error)}), 400
 
 @usuario_bp.route('/<int:id_usuario>', methods=['DELETE'])
+@requiere_roles(ID_ROL_COORDINADOR)
 def eliminar_usuario(id_usuario):
     try:
         eliminado = UsuarioController.eliminar_usuario(id_usuario)

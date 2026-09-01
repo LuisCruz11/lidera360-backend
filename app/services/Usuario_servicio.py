@@ -42,7 +42,12 @@ class UsuarioServicio:
         if usuario:
             token = create_access_token(
                 identity=str(usuario.id_usuario),
-                additional_claims={"id_rol": usuario.id_rol, "username": usuario.username}
+                additional_claims={
+                    "id_rol": usuario.id_rol,
+                    "username": usuario.username,
+                    "cedula_cliente": usuario.cedula_cliente,
+                    "cedula_personal": usuario.cedula_personal,
+                }
             )
             return {"token": token, "usuario": usuario.to_dict()}
 

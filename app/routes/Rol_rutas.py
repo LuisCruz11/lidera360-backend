@@ -1,8 +1,15 @@
 from flask import Blueprint, request, jsonify
 from app.controller.Rol_Controller import RolController
+from app.utils.auth import ID_ROL_COORDINADOR, requiere_roles
 
 
 rol_bp = Blueprint('rol_bp', __name__)
+
+
+@rol_bp.before_request
+@requiere_roles(ID_ROL_COORDINADOR)
+def _restringir_rol():
+    return None
 
 
 @rol_bp.route('/', methods=['GET'])

@@ -1,8 +1,15 @@
 from flask import Blueprint, request, jsonify
 from app.controller.Inscripcion_Controller import InscripcionController
+from app.utils.auth import ID_ROL_COORDINADOR, requiere_roles
 
 
 inscripcion_bp = Blueprint('inscripcion_bp', __name__)
+
+
+@inscripcion_bp.before_request
+@requiere_roles(ID_ROL_COORDINADOR)
+def _restringir_inscripcion():
+    return None
 
 
 @inscripcion_bp.route('/', methods=['GET'])

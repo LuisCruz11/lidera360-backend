@@ -1,8 +1,15 @@
 from flask import Blueprint, request, jsonify
 from app.controller.Progreso_Cliente_Controller import ProgresoClienteController
+from app.utils.auth import ID_ROL_COORDINADOR, requiere_roles
 
 
 progreso_cliente_bp = Blueprint('progreso_cliente_bp', __name__)
+
+
+@progreso_cliente_bp.before_request
+@requiere_roles(ID_ROL_COORDINADOR)
+def _restringir_progreso_cliente():
+    return None
 
 
 @progreso_cliente_bp.route('/', methods=['GET'])

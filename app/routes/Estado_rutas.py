@@ -1,8 +1,15 @@
 from flask import Blueprint, request, jsonify
 from app.controller.Estado_Controller import EstadoController
+from app.utils.auth import ID_ROL_COORDINADOR, requiere_roles
 
 
 estado_bp = Blueprint('estado_bp', __name__)
+
+
+@estado_bp.before_request
+@requiere_roles(ID_ROL_COORDINADOR)
+def _restringir_estado():
+    return None
 
 
 @estado_bp.route('/', methods=['GET'])
