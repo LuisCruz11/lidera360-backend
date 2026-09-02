@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, verify_jwt_in_request
 from app.Config import Config
+from app.extensions import limiter
 
 from app.routes.Cliente_rutas import cliente_bp
 from app.routes.Usuario_rutas import usuario_bp
@@ -28,6 +29,11 @@ def crear_app():
 
     CORS(app)
     JWTManager(app)
+    limiter.init_app(app)
+
+    @app.errorhandler(429)
+    def _limite_excedido(error):
+        return jsonify({"mensaje": "Demasiadas solicitudes. Intenta de nuevo en unos minutos."}), 429
 
     @app.before_request
     def requerir_autenticacion():

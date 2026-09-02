@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity
 from app.controller.Usuario_Controller import UsuarioController
+from app.extensions import limiter
 from app.utils.auth import ID_ROL_COORDINADOR, requiere_propio_usuario, requiere_roles
 
 usuario_bp = Blueprint('usuario_bp', __name__)
@@ -19,6 +20,7 @@ def obtener_usuario(id_usuario):
     return jsonify({"mensaje": "Usuario no encontrado"}), 404
 
 @usuario_bp.route('/login', methods=['POST'])
+@limiter.limit("10 per minute")
 def login():
     data = request.json
     
@@ -29,6 +31,7 @@ def login():
         return jsonify({"mensaje": str(error)}), 401
 
 @usuario_bp.route('/registro', methods=['POST'])
+@limiter.limit("5 per hour")
 def registro():
     data = request.get_json(silent=True) or {}
 
@@ -84,6 +87,7 @@ def actualizar_usuario(id_usuario):
     return jsonify({"mensaje": "Usuario no encontrado"}), 404
 
 @usuario_bp.route('/<int:id_usuario>/password', methods=['PUT'])
+@limiter.limit("10 per minute")
 def cambiar_password(id_usuario):
     if get_jwt_identity() != str(id_usuario):
         return jsonify({"mensaje": "No autorizado para cambiar esta contraseña"}), 403
