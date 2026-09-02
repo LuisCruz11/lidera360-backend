@@ -9,7 +9,7 @@ class AuditoriaDAO:
         conexion = Db.obtener_conexion()
         try:
             cursor = conexion.cursor()
-            cursor.execute("SELECT id_auditoria, id_usuario, tabla, accion, descripcion, fecha FROM auditoria")
+            cursor.execute("SELECT id_auditoria, id_usuario, tabla, accion, descripcion, fecha, id_taller FROM auditoria")
             resultados = cursor.fetchall()
         finally:
             conexion.close()
@@ -22,7 +22,7 @@ class AuditoriaDAO:
         try:
             cursor = conexion.cursor()
             cursor.execute("""
-                SELECT id_auditoria, id_usuario, tabla, accion, descripcion, fecha
+                SELECT id_auditoria, id_usuario, tabla, accion, descripcion, fecha, id_taller
                 FROM auditoria
                 WHERE id_auditoria = %s
             """, (id_auditoria,))
@@ -40,13 +40,14 @@ class AuditoriaDAO:
         try:
             cursor = conexion.cursor()
             cursor.execute("""
-                INSERT INTO auditoria (id_usuario, tabla, accion, descripcion)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO auditoria (id_usuario, tabla, accion, descripcion, id_taller)
+                VALUES (%s, %s, %s, %s, %s)
             """, (
                 auditoria_dto.id_usuario,
                 auditoria_dto.tabla,
                 auditoria_dto.accion,
-                auditoria_dto.descripcion
+                auditoria_dto.descripcion,
+                auditoria_dto.id_taller
             ))
             conexion.commit()
             return cursor.lastrowid
@@ -60,13 +61,14 @@ class AuditoriaDAO:
             cursor = conexion.cursor()
             cursor.execute("""
                 UPDATE auditoria
-                SET id_usuario = %s, tabla = %s, accion = %s, descripcion = %s
+                SET id_usuario = %s, tabla = %s, accion = %s, descripcion = %s, id_taller = %s
                 WHERE id_auditoria = %s
             """, (
                 auditoria_dto.id_usuario,
                 auditoria_dto.tabla,
                 auditoria_dto.accion,
                 auditoria_dto.descripcion,
+                auditoria_dto.id_taller,
                 id_auditoria
             ))
             conexion.commit()

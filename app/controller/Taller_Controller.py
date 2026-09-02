@@ -12,6 +12,14 @@ class TallerController:
         return TallerServicio.obtener_taller(id_taller)
 
     @staticmethod
+    def obtener_detalle(id_taller):
+        return TallerServicio.obtener_detalle(id_taller)
+
+    @staticmethod
+    def agregar_nota(id_taller, id_usuario, data):
+        return TallerServicio.agregar_nota(id_taller, id_usuario, data)
+
+    @staticmethod
     def crear_taller(data):
         return TallerServicio.crear_taller(data)
 

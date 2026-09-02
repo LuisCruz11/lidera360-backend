@@ -2,6 +2,8 @@ from app.models.dao.Taller_DAO import TallerDAO
 from app.models.dto.Taller_DTO import TallerDTO
 from app.models.dao.Taller_Personal_DAO import TallerPersonalDAO
 from app.models.dto.Taller_Personal_DTO import TallerPersonalDTO
+from app.models.dao.Auditoria_DAO import AuditoriaDAO
+from app.models.dto.Auditoria_DTO import AuditoriaDTO
 from app.database.Db import Db
 
 
@@ -23,6 +25,22 @@ class TallerServicio:
         if taller:
             return taller.to_dict()
         return None
+
+    @staticmethod
+    def obtener_detalle(id_taller):
+        return TallerDAO.obtener_detalle(id_taller)
+
+    @staticmethod
+    def agregar_nota(id_taller, id_usuario, data):
+        descripcion = (data.get('descripcion') or '').strip()
+        if not descripcion:
+            raise ValueError("La descripción de la nota es obligatoria")
+
+        if not TallerDAO.obtener_por_id(id_taller):
+            raise ValueError("Taller no encontrado")
+
+        nota = AuditoriaDTO(None, id_usuario, 'taller', 'nota', descripcion, None, id_taller)
+        return AuditoriaDAO.crear(nota)
 
     @staticmethod
     def crear_taller(data):

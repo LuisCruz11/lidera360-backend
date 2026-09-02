@@ -1,23 +1,19 @@
 from flask import Blueprint, request, jsonify
 from app.controller.Estado_Controller import EstadoController
-from app.utils.auth import ID_ROL_COORDINADOR, requiere_roles
+from app.utils.auth import ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO, requiere_roles
 
 
 estado_bp = Blueprint('estado_bp', __name__)
 
 
-@estado_bp.before_request
-@requiere_roles(ID_ROL_COORDINADOR)
-def _restringir_estado():
-    return None
-
-
 @estado_bp.route('/', methods=['GET'])
+@requiere_roles(ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO)
 def obtener_estados():
     return jsonify(EstadoController.obtener_estados())
 
 
 @estado_bp.route('/<int:id_estado>', methods=['GET'])
+@requiere_roles(ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO)
 def obtener_estado(id_estado):
     estado = EstadoController.obtener_estado(id_estado)
     if estado:
@@ -26,6 +22,7 @@ def obtener_estado(id_estado):
 
 
 @estado_bp.route('/', methods=['POST'])
+@requiere_roles(ID_ROL_COORDINADOR)
 def crear_estado():
     data = request.json
     id_estado = EstadoController.crear_estado(data)
@@ -33,6 +30,7 @@ def crear_estado():
 
 
 @estado_bp.route('/<int:id_estado>', methods=['PUT'])
+@requiere_roles(ID_ROL_COORDINADOR)
 def actualizar_estado(id_estado):
     data = request.json
     actualizado = EstadoController.actualizar_estado(id_estado, data)
@@ -42,6 +40,7 @@ def actualizar_estado(id_estado):
 
 
 @estado_bp.route('/<int:id_estado>', methods=['DELETE'])
+@requiere_roles(ID_ROL_COORDINADOR)
 def eliminar_estado(id_estado):
     eliminado = EstadoController.eliminar_estado(id_estado)
     if eliminado:

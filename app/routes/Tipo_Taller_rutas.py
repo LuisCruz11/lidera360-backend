@@ -1,23 +1,19 @@
 from flask import Blueprint, request, jsonify
 from app.controller.Tipo_Taller_Controller import TipoTallerController
-from app.utils.auth import ID_ROL_COORDINADOR, requiere_roles
+from app.utils.auth import ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO, requiere_roles
 
 
 tipo_taller_bp = Blueprint('tipo_taller_bp', __name__)
 
 
-@tipo_taller_bp.before_request
-@requiere_roles(ID_ROL_COORDINADOR)
-def _restringir_tipo_taller():
-    return None
-
-
 @tipo_taller_bp.route('/', methods=['GET'])
+@requiere_roles(ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO)
 def obtener_tipos_taller():
     return jsonify(TipoTallerController.obtener_tipos_taller())
 
 
 @tipo_taller_bp.route('/<int:id_tipo_taller>', methods=['GET'])
+@requiere_roles(ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO)
 def obtener_tipo_taller(id_tipo_taller):
     tipo = TipoTallerController.obtener_tipo_taller(id_tipo_taller)
     if tipo:
@@ -26,6 +22,7 @@ def obtener_tipo_taller(id_tipo_taller):
 
 
 @tipo_taller_bp.route('/', methods=['POST'])
+@requiere_roles(ID_ROL_COORDINADOR)
 def crear_tipo_taller():
     data = request.json
     id_tipo_taller = TipoTallerController.crear_tipo_taller(data)
@@ -33,6 +30,7 @@ def crear_tipo_taller():
 
 
 @tipo_taller_bp.route('/<int:id_tipo_taller>', methods=['PUT'])
+@requiere_roles(ID_ROL_COORDINADOR)
 def actualizar_tipo_taller(id_tipo_taller):
     data = request.json
     actualizado = TipoTallerController.actualizar_tipo_taller(id_tipo_taller, data)
@@ -42,6 +40,7 @@ def actualizar_tipo_taller(id_tipo_taller):
 
 
 @tipo_taller_bp.route('/<int:id_tipo_taller>', methods=['DELETE'])
+@requiere_roles(ID_ROL_COORDINADOR)
 def eliminar_tipo_taller(id_tipo_taller):
     eliminado = TipoTallerController.eliminar_tipo_taller(id_tipo_taller)
     if eliminado:

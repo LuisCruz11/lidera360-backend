@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify
 from app.controller.Cliente_Controller import ClienteController
-from app.utils.auth import ID_ROL_COORDINADOR, requiere_propio_cliente, requiere_roles
+from app.utils.auth import ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO, requiere_propio_cliente, requiere_roles
 
 cliente_bp = Blueprint('cliente_bp', __name__)
 
 @cliente_bp.route('/', methods=['GET'])
-@requiere_roles(ID_ROL_COORDINADOR)
+@requiere_roles(ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO)
 def obtener_clientes():
     return jsonify(ClienteController.obtener_clientes())
 
