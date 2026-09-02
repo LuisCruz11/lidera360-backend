@@ -1,14 +1,15 @@
 import re
 
-REGEX_SOLO_NUMEROS = re.compile(r'^\d+$')
 REGEX_SOLO_LETRAS = re.compile(r'^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$')
+REGEX_CEDULA = re.compile(r'^\d{6,10}$')
+REGEX_TELEFONO = re.compile(r'^\d{7,10}$')
 REGEX_CORREO = re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
 REGEX_PASSWORD = re.compile(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%?&])[A-Za-z\d@$!%?&]{8,}$')
 
 
 def validar_cedula(cedula):
-    if not cedula or not REGEX_SOLO_NUMEROS.match(str(cedula)):
-        raise ValueError("La cédula debe contener solo números")
+    if not cedula or not REGEX_CEDULA.match(str(cedula)):
+        raise ValueError("La cédula debe contener solo números, entre 6 y 10 dígitos")
 
 
 def validar_nombre(valor, etiqueta="El nombre"):
@@ -21,8 +22,8 @@ def validar_telefono(telefono, obligatorio=False):
         if obligatorio:
             raise ValueError("El teléfono es obligatorio")
         return
-    if not REGEX_SOLO_NUMEROS.match(str(telefono)):
-        raise ValueError("El teléfono debe contener solo números")
+    if not REGEX_TELEFONO.match(str(telefono)):
+        raise ValueError("El teléfono debe contener solo números, entre 7 y 10 dígitos")
 
 
 def validar_correo(correo, obligatorio=False):
