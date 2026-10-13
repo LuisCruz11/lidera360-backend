@@ -4,6 +4,7 @@ from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
 from app.database.Db import Db
 from app.services.Notificacion_Servicio import NotificacionServicio
 from app.utils.fechas import hoy
+from app.services.Estado_Servicio import EstadoServicio
 
 
 class InscripcionServicio:
@@ -31,6 +32,8 @@ class InscripcionServicio:
         if InscripcionDAO.existe(cliente_cedula, id_taller):
             raise ValueError("El cliente ya esta inscrito en este taller")
 
+        EstadoServicio.validar_estado_para(data.get('id_estado'), 'inscripcion')
+
         inscripcion = InscripcionDTO(
             None,
             cliente_cedula,
@@ -55,6 +58,7 @@ class InscripcionServicio:
 
     @staticmethod
     def actualizar_inscripcion(id_inscripcion, data, id_usuario=None):
+        EstadoServicio.validar_estado_para(data.get('id_estado'), 'inscripcion')
         inscripcion = InscripcionDTO(
             id_inscripcion,
             data.get('cliente_cedula'),

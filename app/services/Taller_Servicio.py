@@ -5,6 +5,7 @@ from app.models.dto.Taller_Personal_DTO import TallerPersonalDTO
 from app.models.dao.Auditoria_DAO import AuditoriaDAO
 from app.models.dto.Auditoria_DTO import AuditoriaDTO
 from app.database.Db import Db
+from app.services.Estado_Servicio import EstadoServicio
 
 
 def _validar_fechas(fecha_inicio, fecha_fin):
@@ -45,6 +46,7 @@ class TallerServicio:
     @staticmethod
     def crear_taller(data):
         _validar_fechas(data.get('fecha_inicio'), data.get('fecha_fin'))
+        EstadoServicio.validar_estado_para(data.get('id_estado'), 'taller')
 
         taller = TallerDTO(
             None,
@@ -83,6 +85,7 @@ class TallerServicio:
     @staticmethod
     def actualizar_taller(id_taller, data):
         _validar_fechas(data.get('fecha_inicio'), data.get('fecha_fin'))
+        EstadoServicio.validar_estado_para(data.get('id_estado'), 'taller')
 
         taller = TallerDTO(
             id_taller,

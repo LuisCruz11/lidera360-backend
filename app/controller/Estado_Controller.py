@@ -4,8 +4,8 @@ from app.services.Estado_Servicio import EstadoServicio
 class EstadoController:
 
     @staticmethod
-    def obtener_estados():
-        return EstadoServicio.listar_estados()
+    def obtener_estados(aplica_a=None):
+        return EstadoServicio.listar_estados(aplica_a)
 
     @staticmethod
     def obtener_estado(id_estado):

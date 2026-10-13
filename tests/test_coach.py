@@ -23,12 +23,12 @@ def daos():
     with patch("app.services.Asignacion_Taller.TallerDAO", taller_dao), \
             patch(SERVICIO + "TallerDAO", taller_dao), \
             patch(SERVICIO + "InscripcionDAO") as inscripcion_dao, \
-            patch(SERVICIO + "EstadoDAO") as estado_dao, \
+            patch("app.services.Estado_Servicio.EstadoDAO") as estado_dao, \
             patch(SERVICIO + "AuditoriaDAO") as auditoria_dao, \
             patch(SERVICIO + "ProgresoClienteDAO") as progreso_dao, \
             patch(SERVICIO + "Db") as db,             patch(SERVICIO + "NotificacionServicio") as notificacion:
         inscripcion_dao.obtener_por_id.return_value = InscripcionDTO(3, "222", 5, 1, None)
-        estado_dao.obtener_por_id.return_value = EstadoDTO(4, "Aprobado")
+        estado_dao.obtener_por_id.return_value = EstadoDTO(4, "Aprobado", "inscripcion")
         progreso_dao.avanzar_si_aprobo.return_value = None
         auditoria_dao.crear.return_value = 99
         yield {
@@ -122,6 +122,12 @@ class TestEvaluacion:
     def test_estado_inexistente(self, client, daos, como_coach):
         daos["estado"].obtener_por_id.return_value = None
         assert client.put("/api/coach/inscripciones/3/evaluacion", json={"id_estado": 99}, headers=como_coach).status_code == 400
+
+    def test_estado_que_no_es_de_inscripcion(self, client, daos, como_coach):
+        daos["estado"].obtener_por_id.return_value = EstadoDTO(1, "Activo", "cliente,taller")
+        respuesta = client.put("/api/coach/inscripciones/3/evaluacion", json={"id_estado": 1}, headers=como_coach)
+        assert respuesta.status_code == 400
+        assert respuesta.json["mensaje"] == "El estado Activo no se puede asignar a una inscripción"
 
     def test_inscripcion_inexistente(self, client, daos, como_coach):
         daos["inscripcion"].obtener_por_id.return_value = None

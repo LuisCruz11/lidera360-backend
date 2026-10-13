@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
+from app.models.dto.Estado_DTO import EstadoDTO
 from app.models.dto.Inscripcion_DTO import InscripcionDTO
 
 INSCRIPCION_APROBADA_BASICO = {
@@ -65,7 +66,9 @@ SERVICIO = "app.services.Inscripcion_Servicio."
 def servicio_inscripcion():
     with patch(SERVICIO + "InscripcionDAO") as inscripcion_dao, \
             patch(SERVICIO + "ProgresoClienteDAO") as progreso_dao, \
-            patch(SERVICIO + "Db") as db,             patch(SERVICIO + "NotificacionServicio") as notificacion:
+            patch(SERVICIO + "Db") as db,             patch(SERVICIO + "NotificacionServicio") as notificacion, \
+            patch("app.services.Estado_Servicio.EstadoDAO") as estado_dao:
+        estado_dao.obtener_por_id.side_effect = lambda id_estado: EstadoDTO(id_estado, "Estado", "inscripcion")
         inscripcion_dao.existe.return_value = False
         inscripcion_dao.obtener_por_id.return_value = InscripcionDTO(3, "222", 5, 3, None)
         inscripcion_dao.actualizar.return_value = True

@@ -59,7 +59,10 @@ def crear_inscripcion():
 @auditar("inscripcion", "actualizar", da.inscripcion_actualizada, antes=da.antes_de_modificar_inscripcion, taller=da.taller_de_los_datos)
 def actualizar_inscripcion(id_inscripcion):
     data = request.get_json(silent=True) or {}
-    actualizado, nivel_nuevo = InscripcionController.actualizar_inscripcion(id_inscripcion, data, get_jwt_identity())
+    try:
+        actualizado, nivel_nuevo = InscripcionController.actualizar_inscripcion(id_inscripcion, data, get_jwt_identity())
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 400
     if actualizado:
         return jsonify({"mensaje": "Inscripcion actualizada", "nivel_nuevo": nivel_nuevo})
     return jsonify({"mensaje": "Inscripcion no encontrada"}), 404

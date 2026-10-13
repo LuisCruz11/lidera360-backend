@@ -23,6 +23,7 @@ python -m pytest
 | `test_notificaciones.py` | Correos al cliente por inscripción, resultado (aprobado / no aprobado) y cancelación |
 | `test_reportes.py` | Reportes en Excel del coordinador: contenido, filtros y permisos |
 | `test_auditoria.py` | Auditoría de las acciones del coordinador, integridad de la tabla y hora de Colombia |
+| `test_estados.py` | Estados separados por uso (cliente, taller, inscripción) y validación al guardar |
 | `test_infraestructura.py` | Envío de correos por Brevo y configuración de la conexión a MySQL |
 
 ## Aislamiento

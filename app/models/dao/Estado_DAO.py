@@ -5,11 +5,19 @@ from app.models.dto.Estado_DTO import EstadoDTO
 class EstadoDAO:
 
     @staticmethod
-    def obtener_todos():
+    def obtener_todos(aplica_a=None):
         conexion = Db.obtener_conexion()
         try:
             cursor = conexion.cursor()
-            cursor.execute("SELECT id_estado, nombre FROM estados")
+            if aplica_a:
+                cursor.execute("""
+                    SELECT id_estado, nombre, aplica_a
+                    FROM estados
+                    WHERE FIND_IN_SET(%s, aplica_a)
+                    ORDER BY id_estado
+                """, (aplica_a,))
+            else:
+                cursor.execute("SELECT id_estado, nombre, aplica_a FROM estados ORDER BY id_estado")
             resultados = cursor.fetchall()
         finally:
             conexion.close()
@@ -21,7 +29,7 @@ class EstadoDAO:
         conexion = Db.obtener_conexion()
         try:
             cursor = conexion.cursor()
-            cursor.execute("SELECT id_estado, nombre FROM estados WHERE id_estado = %s", (id_estado,))
+            cursor.execute("SELECT id_estado, nombre, aplica_a FROM estados WHERE id_estado = %s", (id_estado,))
             fila = cursor.fetchone()
         finally:
             conexion.close()
@@ -35,7 +43,10 @@ class EstadoDAO:
         conexion = Db.obtener_conexion()
         try:
             cursor = conexion.cursor()
-            cursor.execute("INSERT INTO estados (nombre) VALUES (%s)", (estado_dto.nombre,))
+            cursor.execute(
+                "INSERT INTO estados (nombre, aplica_a) VALUES (%s, %s)",
+                (estado_dto.nombre, ",".join(estado_dto.aplica_a))
+            )
             conexion.commit()
             return cursor.lastrowid
         finally:
@@ -46,7 +57,10 @@ class EstadoDAO:
         conexion = Db.obtener_conexion()
         try:
             cursor = conexion.cursor()
-            cursor.execute("UPDATE estados SET nombre = %s WHERE id_estado = %s", (estado_dto.nombre, id_estado))
+            cursor.execute(
+                "UPDATE estados SET nombre = %s, aplica_a = %s WHERE id_estado = %s",
+                (estado_dto.nombre, ",".join(estado_dto.aplica_a), id_estado)
+            )
             conexion.commit()
             return cursor.rowcount > 0
         finally:

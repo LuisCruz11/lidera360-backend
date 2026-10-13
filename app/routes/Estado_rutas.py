@@ -12,7 +12,10 @@ estado_bp = Blueprint('estado_bp', __name__)
 @estado_bp.route('/', methods=['GET'])
 @requiere_roles(ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO, ID_ROL_COACH)
 def obtener_estados():
-    return jsonify(EstadoController.obtener_estados())
+    try:
+        return jsonify(EstadoController.obtener_estados(request.args.get('aplica_a')))
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 400
 
 
 @estado_bp.route('/<int:id_estado>', methods=['GET'])
@@ -28,8 +31,11 @@ def obtener_estado(id_estado):
 @requiere_roles(ID_ROL_COORDINADOR)
 @auditar("estados", "crear", da.catalogo_creado("estado"))
 def crear_estado():
-    data = request.json
-    id_estado = EstadoController.crear_estado(data)
+    data = request.get_json(silent=True) or {}
+    try:
+        id_estado = EstadoController.crear_estado(data)
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 400
     return jsonify({"mensaje": "Estado creado", "id_estado": id_estado}), 201
 
 
@@ -37,8 +43,11 @@ def crear_estado():
 @requiere_roles(ID_ROL_COORDINADOR)
 @auditar("estados", "actualizar", da.catalogo_actualizado("estado", "id_estado"))
 def actualizar_estado(id_estado):
-    data = request.json
-    actualizado = EstadoController.actualizar_estado(id_estado, data)
+    data = request.get_json(silent=True) or {}
+    try:
+        actualizado = EstadoController.actualizar_estado(id_estado, data)
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 400
     if actualizado:
         return jsonify({"mensaje": "Estado actualizado"})
     return jsonify({"mensaje": "Estado no encontrado"}), 404

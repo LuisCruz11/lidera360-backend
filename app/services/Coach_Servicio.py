@@ -1,12 +1,12 @@
 from app.models.dao.Taller_DAO import TallerDAO
 from app.models.dao.Inscripcion_DAO import InscripcionDAO
-from app.models.dao.Estado_DAO import EstadoDAO
 from app.models.dao.Auditoria_DAO import AuditoriaDAO
 from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
 from app.models.dto.Auditoria_DTO import AuditoriaDTO
 from app.database.Db import Db
 from app.services.Notificacion_Servicio import NotificacionServicio
 from app.services.Asignacion_Taller import ROL_EN_TALLER_COACH, validar_asignacion, validar_cedula_personal
+from app.services.Estado_Servicio import EstadoServicio
 
 
 class CoachServicio:
@@ -48,9 +48,7 @@ class CoachServicio:
 
         CoachServicio._validar_asignacion(inscripcion.id_taller, cedula_personal)
 
-        estado = EstadoDAO.obtener_por_id(id_estado)
-        if not estado:
-            raise ValueError("El estado seleccionado no existe")
+        estado = EstadoServicio.validar_estado_para(id_estado, 'inscripcion')
 
         observacion = (data.get('observacion') or '').strip()
         descripcion = f"Evaluación del participante {inscripcion.cliente_cedula}: {estado.nombre}"

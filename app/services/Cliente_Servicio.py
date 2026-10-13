@@ -15,6 +15,7 @@ from app.utils.validaciones import (
 )
 from app.services.Notificacion_Servicio import NotificacionServicio
 import bcrypt
+from app.services.Estado_Servicio import EstadoServicio
 
 ID_ROL_CLIENTE = 4
 
@@ -76,6 +77,7 @@ class ClienteServicio:
         validar_telefono(data.get('telefono'))
         validar_correo(data.get('correo'))
         validar_edad(data.get('edad'))
+        EstadoServicio.validar_estado_para(data.get('id_estado'), 'cliente')
 
         username = data.get('username')
         password = data.get('password')
@@ -145,6 +147,7 @@ class ClienteServicio:
         validar_telefono(data.get('telefono'))
         validar_correo(data.get('correo'))
         validar_edad(data.get('edad'))
+        EstadoServicio.validar_estado_para(data.get('id_estado'), 'cliente')
 
         cliente = ClienteDTO(
             cedula,
