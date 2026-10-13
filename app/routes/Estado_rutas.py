@@ -1,19 +1,19 @@
 from flask import Blueprint, request, jsonify
 from app.controller.Estado_Controller import EstadoController
-from app.utils.auth import ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO, requiere_roles
+from app.utils.auth import ID_ROL_COACH, ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO, requiere_roles
 
 
 estado_bp = Blueprint('estado_bp', __name__)
 
 
 @estado_bp.route('/', methods=['GET'])
-@requiere_roles(ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO)
+@requiere_roles(ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO, ID_ROL_COACH)
 def obtener_estados():
     return jsonify(EstadoController.obtener_estados())
 
 
 @estado_bp.route('/<int:id_estado>', methods=['GET'])
-@requiere_roles(ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO)
+@requiere_roles(ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO, ID_ROL_COACH)
 def obtener_estado(id_estado):
     estado = EstadoController.obtener_estado(id_estado)
     if estado:

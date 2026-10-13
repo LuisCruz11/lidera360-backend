@@ -37,6 +37,46 @@ class TallerDAO:
         return None
 
     @staticmethod
+    def obtener_por_personal(cedula_personal, rol_en_taller):
+        conexion = Db.obtener_conexion()
+        try:
+            cursor = conexion.cursor(pymysql.cursors.DictCursor)
+            cursor.execute("""
+                SELECT t.id_taller, t.nombre, t.id_tipo_taller, tt.nombre AS tipo_taller,
+                       t.fecha_inicio, t.fecha_fin, t.id_estado, e.nombre AS estado,
+                       (SELECT COUNT(*) FROM inscripcion i WHERE i.id_taller = t.id_taller) AS total_inscritos
+                FROM taller t
+                INNER JOIN taller_personal tp ON tp.id_taller = t.id_taller
+                LEFT JOIN tipo_taller tt ON tt.id_tipo_taller = t.id_tipo_taller
+                LEFT JOIN estados e ON e.id_estado = t.id_estado
+                WHERE tp.cedula_personal = %s AND LOWER(TRIM(tp.rol_en_taller)) = %s
+                ORDER BY t.fecha_inicio DESC, t.nombre ASC
+            """, (cedula_personal, rol_en_taller.lower()))
+            talleres = cursor.fetchall()
+        finally:
+            conexion.close()
+
+        for taller in talleres:
+            taller["fecha_inicio"] = taller["fecha_inicio"].isoformat() if taller["fecha_inicio"] else None
+            taller["fecha_fin"] = taller["fecha_fin"].isoformat() if taller["fecha_fin"] else None
+        return talleres
+
+    @staticmethod
+    def tiene_personal_asignado(id_taller, cedula_personal, rol_en_taller):
+        conexion = Db.obtener_conexion()
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("""
+                SELECT 1
+                FROM taller_personal
+                WHERE id_taller = %s AND cedula_personal = %s AND LOWER(TRIM(rol_en_taller)) = %s
+                LIMIT 1
+            """, (id_taller, cedula_personal, rol_en_taller.lower()))
+            return cursor.fetchone() is not None
+        finally:
+            conexion.close()
+
+    @staticmethod
     def obtener_detalle(id_taller):
         conexion = Db.obtener_conexion()
         try:
@@ -77,7 +117,7 @@ class TallerDAO:
             inscritos = cursor.fetchall()
 
             cursor.execute("""
-                SELECT a.id_auditoria, a.descripcion, a.fecha, u.username
+                SELECT a.id_auditoria, a.accion, a.descripcion, a.fecha, u.username
                 FROM auditoria a
                 LEFT JOIN usuarios u ON u.id_usuario = a.id_usuario
                 WHERE a.id_taller = %s
@@ -117,6 +157,7 @@ class TallerDAO:
             "notas": [
                 {
                     "id_auditoria": nota["id_auditoria"],
+                    "accion": nota.get("accion") or "",
                     "descripcion": nota["descripcion"],
                     "fecha": nota["fecha"].isoformat() if nota["fecha"] else None,
                     "usuario": nota.get("username") or "",

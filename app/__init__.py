@@ -15,6 +15,7 @@ from app.routes.Inscripcion_rutas import inscripcion_bp
 from app.routes.Taller_Personal_rutas import taller_personal_bp
 from app.routes.Progreso_Cliente_rutas import progreso_cliente_bp
 from app.routes.Auditoria_rutas import auditoria_bp
+from app.routes.Coach_rutas import coach_bp
 
 RUTAS_PUBLICAS = {
     ('/api/usuarios/login', 'POST'),
@@ -57,5 +58,6 @@ def crear_app():
     app.register_blueprint(taller_personal_bp, url_prefix='/api/taller-personal')
     app.register_blueprint(progreso_cliente_bp, url_prefix='/api/progresos-clientes')
     app.register_blueprint(auditoria_bp, url_prefix='/api/auditorias')
+    app.register_blueprint(coach_bp, url_prefix='/api/coach')
 
     return app

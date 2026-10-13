@@ -35,8 +35,11 @@ class AuditoriaDAO:
         return None
 
     @staticmethod
-    def crear(auditoria_dto):
-        conexion = Db.obtener_conexion()
+    def crear(auditoria_dto, conexion=None):
+        cerrar_conexion = conexion is None
+        if cerrar_conexion:
+            conexion = Db.obtener_conexion()
+
         try:
             cursor = conexion.cursor()
             cursor.execute("""
@@ -49,10 +52,12 @@ class AuditoriaDAO:
                 auditoria_dto.descripcion,
                 auditoria_dto.id_taller
             ))
-            conexion.commit()
+            if cerrar_conexion:
+                conexion.commit()
             return cursor.lastrowid
         finally:
-            conexion.close()
+            if cerrar_conexion:
+                conexion.close()
 
     @staticmethod
     def actualizar(id_auditoria, auditoria_dto):

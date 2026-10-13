@@ -93,6 +93,26 @@ class InscripcionDAO:
             conexion.close()
 
     @staticmethod
+    def actualizar_estado(id_inscripcion, id_estado, conexion=None):
+        cerrar_conexion = conexion is None
+        if cerrar_conexion:
+            conexion = Db.obtener_conexion()
+
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("""
+                UPDATE inscripcion
+                SET id_estado = %s
+                WHERE id_inscripcion = %s
+            """, (id_estado, id_inscripcion))
+            if cerrar_conexion:
+                conexion.commit()
+            return cursor.rowcount > 0
+        finally:
+            if cerrar_conexion:
+                conexion.close()
+
+    @staticmethod
     def eliminar(id_inscripcion):
         conexion = Db.obtener_conexion()
         try:
