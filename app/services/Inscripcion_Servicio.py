@@ -3,7 +3,7 @@ from app.models.dto.Inscripcion_DTO import InscripcionDTO
 from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
 from app.database.Db import Db
 from app.services.Notificacion_Servicio import NotificacionServicio
-from datetime import date
+from app.utils.fechas import hoy
 
 
 class InscripcionServicio:
@@ -36,7 +36,7 @@ class InscripcionServicio:
             cliente_cedula,
             id_taller,
             data.get('id_estado'),
-            data.get('fecha_inscripcion') or date.today().isoformat()
+            data.get('fecha_inscripcion') or hoy().isoformat()
         )
 
         conexion = Db.obtener_conexion()

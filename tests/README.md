@@ -21,6 +21,8 @@ python -m pytest
 | `test_personal_capacitado.py` | Talleres y participantes propios, notas y registro de asistencia |
 | `test_recuperar_password.py` | Recuperación de contraseña con enlace firmado de un solo uso |
 | `test_notificaciones.py` | Correos al cliente por inscripción, resultado (aprobado / no aprobado) y cancelación |
+| `test_reportes.py` | Reportes en Excel del coordinador: contenido, filtros y permisos |
+| `test_auditoria.py` | Auditoría de las acciones del coordinador, integridad de la tabla y hora de Colombia |
 | `test_infraestructura.py` | Envío de correos por Brevo y configuración de la conexión a MySQL |
 
 ## Aislamiento

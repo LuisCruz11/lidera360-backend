@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from app.controller.Personal_Controller import PersonalController
 from app.utils.auth import ID_ROL_COORDINADOR, requiere_roles
+from app.utils.auditoria import auditar
+import app.utils.descripciones_auditoria as da
 
 
 personal_bp = Blueprint('personal_bp', __name__)
@@ -26,6 +28,7 @@ def obtener_persona(cedula):
 
 
 @personal_bp.route('/', methods=['POST'])
+@auditar("personal", "crear", da.personal_creado)
 def crear_persona():
     data = request.get_json(silent=True) or {}
     campos_requeridos = ['cedula', 'nombres', 'apellidos', 'correo', 'telefono', 'id_rol']
@@ -48,6 +51,7 @@ def crear_persona():
 
 
 @personal_bp.route('/<cedula>', methods=['PUT'])
+@auditar("personal", "actualizar", da.personal_actualizado)
 def actualizar_persona(cedula):
     data = request.get_json(silent=True) or {}
     campos_requeridos = ['nombres', 'apellidos', 'correo', 'telefono', 'id_rol']
@@ -72,6 +76,7 @@ def actualizar_persona(cedula):
 
 
 @personal_bp.route('/<cedula>', methods=['DELETE'])
+@auditar("personal", "eliminar", da.personal_eliminado, antes=da.antes_de_eliminar_personal)
 def eliminar_persona(cedula):
     try:
         eliminado = PersonalController.eliminar_persona(cedula)

@@ -1,7 +1,7 @@
 from app.database.Db import Db
 from app.models.dto.Cliente_DTO import ClienteDTO
 import pymysql
-from datetime import date
+from app.utils.fechas import hoy
 
 ESTADO_INSCRIPCION_INICIAL = 'iniciado'
 ESTADOS_TALLER_NO_DISPONIBLE = ('inactivo', 'finalizado')
@@ -38,7 +38,7 @@ class ClienteDAO:
             return False
         estado = (fila.get("estado_inscripcion") or "").lower()
         fecha_inicio = fila.get("fecha_inicio")
-        return estado == ESTADO_INSCRIPCION_INICIAL and bool(fecha_inicio) and fecha_inicio > date.today()
+        return estado == ESTADO_INSCRIPCION_INICIAL and bool(fecha_inicio) and fecha_inicio > hoy()
 
     @staticmethod
     def _es_taller_en_curso(taller):
@@ -228,7 +228,7 @@ class ClienteDAO:
             if (taller.get("estado_taller") or "").lower() in ESTADOS_TALLER_NO_DISPONIBLE:
                 raise ValueError("El taller no está disponible")
 
-            if taller.get("fecha_fin") and taller["fecha_fin"] < date.today():
+            if taller.get("fecha_fin") and taller["fecha_fin"] < hoy():
                 raise ValueError("El taller ya terminó")
 
             cursor.execute("""
@@ -434,7 +434,8 @@ class ClienteDAO:
             cursor.execute("DELETE FROM inscripcion WHERE cliente_cedula = %s", (cedula,))
             cursor.execute("DELETE FROM progreso_cliente WHERE cliente_cedula = %s", (cedula,))
             if usuario:
-                cursor.execute("DELETE FROM auditoria WHERE id_usuario = %s", (usuario[0],))
+                # La auditoría se conserva: solo se desvincula el usuario eliminado.
+                cursor.execute("UPDATE auditoria SET id_usuario = NULL WHERE id_usuario = %s", (usuario[0],))
                 cursor.execute("DELETE FROM usuarios WHERE id_usuario = %s", (usuario[0],))
             cursor.execute("DELETE FROM clientes WHERE cedula = %s", (cedula,))
             conexion.commit()

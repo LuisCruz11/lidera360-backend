@@ -1,3 +1,5 @@
+import pymysql
+
 from app.database.Db import Db
 from app.models.dto.Auditoria_DTO import AuditoriaDTO
 
@@ -8,13 +10,23 @@ class AuditoriaDAO:
     def obtener_todos():
         conexion = Db.obtener_conexion()
         try:
-            cursor = conexion.cursor()
-            cursor.execute("SELECT id_auditoria, id_usuario, tabla, accion, descripcion, fecha, id_taller FROM auditoria")
-            resultados = cursor.fetchall()
+            cursor = conexion.cursor(pymysql.cursors.DictCursor)
+            cursor.execute("""
+                SELECT a.id_auditoria, a.id_usuario, u.username AS usuario, r.nombre AS rol,
+                       a.tabla, a.accion, a.descripcion, a.fecha, a.id_taller, t.nombre AS taller
+                FROM auditoria a
+                LEFT JOIN usuarios u ON u.id_usuario = a.id_usuario
+                LEFT JOIN roles r ON r.id_rol = u.id_rol
+                LEFT JOIN taller t ON t.id_taller = a.id_taller
+                ORDER BY a.fecha DESC, a.id_auditoria DESC
+            """)
+            filas = cursor.fetchall()
         finally:
             conexion.close()
 
-        return [AuditoriaDTO(*fila) for fila in resultados]
+        for fila in filas:
+            fila["fecha"] = fila["fecha"].isoformat() if fila["fecha"] else None
+        return filas
 
     @staticmethod
     def obtener_por_id(id_auditoria):
@@ -58,36 +70,3 @@ class AuditoriaDAO:
         finally:
             if cerrar_conexion:
                 conexion.close()
-
-    @staticmethod
-    def actualizar(id_auditoria, auditoria_dto):
-        conexion = Db.obtener_conexion()
-        try:
-            cursor = conexion.cursor()
-            cursor.execute("""
-                UPDATE auditoria
-                SET id_usuario = %s, tabla = %s, accion = %s, descripcion = %s, id_taller = %s
-                WHERE id_auditoria = %s
-            """, (
-                auditoria_dto.id_usuario,
-                auditoria_dto.tabla,
-                auditoria_dto.accion,
-                auditoria_dto.descripcion,
-                auditoria_dto.id_taller,
-                id_auditoria
-            ))
-            conexion.commit()
-            return cursor.rowcount > 0
-        finally:
-            conexion.close()
-
-    @staticmethod
-    def eliminar(id_auditoria):
-        conexion = Db.obtener_conexion()
-        try:
-            cursor = conexion.cursor()
-            cursor.execute("DELETE FROM auditoria WHERE id_auditoria = %s", (id_auditoria,))
-            conexion.commit()
-            return cursor.rowcount > 0
-        finally:
-            conexion.close()

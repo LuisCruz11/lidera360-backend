@@ -3,6 +3,8 @@ from io import BytesIO
 from flask import Blueprint, request, jsonify, send_file
 from app.controller.Reporte_Controller import ReporteController
 from app.utils.auth import ID_ROL_COORDINADOR, requiere_roles
+from app.utils.auditoria import auditar
+import app.utils.descripciones_auditoria as da
 
 
 reporte_bp = Blueprint('reporte_bp', __name__)
@@ -17,6 +19,7 @@ def _restringir_reportes():
 
 
 @reporte_bp.route('/<tipo>', methods=['GET'])
+@auditar("reportes", "generar", da.reporte_generado)
 def generar_reporte(tipo):
     try:
         contenido, nombre_archivo = ReporteController.generar(tipo, request.args.to_dict())

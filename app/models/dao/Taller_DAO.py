@@ -224,7 +224,8 @@ class TallerDAO:
         try:
             cursor = conexion.cursor()
             cursor.execute("DELETE FROM taller_personal WHERE id_taller = %s", (id_taller,))
-            cursor.execute("DELETE FROM auditoria WHERE id_taller = %s", (id_taller,))
+            # La auditoría y la bitácora se conservan: solo se desvincula el taller eliminado.
+            cursor.execute("UPDATE auditoria SET id_taller = NULL WHERE id_taller = %s", (id_taller,))
             cursor.execute("DELETE FROM inscripcion WHERE id_taller = %s", (id_taller,))
             cursor.execute("DELETE FROM taller WHERE id_taller = %s", (id_taller,))
             conexion.commit()

@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from app.controller.Taller_Personal_Controller import TallerPersonalController
 from app.utils.auth import ID_ROL_COORDINADOR, requiere_roles
+from app.utils.auditoria import auditar
+import app.utils.descripciones_auditoria as da
 
 
 taller_personal_bp = Blueprint('taller_personal_bp', __name__)
@@ -26,6 +28,7 @@ def obtener_taller_personal(id_taller_personal):
 
 
 @taller_personal_bp.route('/', methods=['POST'])
+@auditar("taller_personal", "crear", da.asignacion_guardada, taller=da.taller_de_los_datos)
 def crear_taller_personal():
     data = request.json
     id_taller_personal = TallerPersonalController.crear_taller_personal(data)
@@ -33,6 +36,7 @@ def crear_taller_personal():
 
 
 @taller_personal_bp.route('/<int:id_taller_personal>', methods=['PUT'])
+@auditar("taller_personal", "actualizar", da.asignacion_guardada, taller=da.taller_de_los_datos)
 def actualizar_taller_personal(id_taller_personal):
     data = request.json
     actualizado = TallerPersonalController.actualizar_taller_personal(id_taller_personal, data)
@@ -42,6 +46,7 @@ def actualizar_taller_personal(id_taller_personal):
 
 
 @taller_personal_bp.route('/<int:id_taller_personal>', methods=['DELETE'])
+@auditar("taller_personal", "eliminar", da.asignacion_eliminada, antes=da.antes_de_eliminar_asignacion, taller=da.taller_de_los_datos)
 def eliminar_taller_personal(id_taller_personal):
     eliminado = TallerPersonalController.eliminar_taller_personal(id_taller_personal)
     if eliminado:

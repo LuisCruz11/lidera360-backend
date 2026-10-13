@@ -1,9 +1,8 @@
-from datetime import date
-
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt, get_jwt_identity
 from app.controller.Personal_Capacitado_Controller import PersonalCapacitadoController
 from app.utils.auth import ID_ROL_PERSONAL_CAPACITADO, requiere_roles
+from app.utils.fechas import hoy
 
 
 personal_capacitado_bp = Blueprint('personal_capacitado_bp', __name__)
@@ -63,7 +62,7 @@ def agregar_nota(id_taller):
 
 @personal_capacitado_bp.route('/talleres/<int:id_taller>/asistencia', methods=['GET'])
 def obtener_asistencia(id_taller):
-    fecha = request.args.get('fecha') or date.today().isoformat()
+    fecha = request.args.get('fecha') or hoy().isoformat()
     try:
         return jsonify(PersonalCapacitadoController.obtener_asistencia(id_taller, _cedula_personal(), fecha))
     except (PermissionError, LookupError, ValueError) as error:

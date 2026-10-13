@@ -21,6 +21,9 @@ os.environ["FRONTEND_URL"] = "https://frontend.pruebas"
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from contextlib import ExitStack  # noqa: E402
+from unittest.mock import patch  # noqa: E402
+
 import pytest  # noqa: E402
 from flask_jwt_extended import create_access_token  # noqa: E402
 
@@ -45,6 +48,18 @@ def sin_recursos_reales(monkeypatch):
 
     monkeypatch.setattr("pymysql.connect", conexion_prohibida)
     monkeypatch.setattr("urllib.request.urlopen", red_prohibida)
+
+
+DAOS_DE_DESCRIPCIONES = ["ClienteDAO", "EstadoDAO", "InscripcionDAO", "PersonalDAO", "ProgresoClienteDAO",
+                         "RolDAO", "TallerDAO", "TallerPersonalDAO", "TipoTallerDAO", "UsuarioDAO"]
+
+
+@pytest.fixture(autouse=True)
+def auditoria_dao():
+    with ExitStack() as pila:
+        for nombre in DAOS_DE_DESCRIPCIONES:
+            pila.enter_context(patch(f"app.utils.descripciones_auditoria.{nombre}"))
+        yield pila.enter_context(patch("app.utils.auditoria.AuditoriaDAO"))
 
 
 @pytest.fixture

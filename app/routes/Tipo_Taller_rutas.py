@@ -1,6 +1,9 @@
 from flask import Blueprint, request, jsonify
 from app.controller.Tipo_Taller_Controller import TipoTallerController
 from app.utils.auth import ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO, requiere_roles
+from app.utils.auditoria import auditar
+import app.utils.descripciones_auditoria as da
+from app.models.dao.Tipo_Taller_DAO import TipoTallerDAO
 
 
 tipo_taller_bp = Blueprint('tipo_taller_bp', __name__)
@@ -23,6 +26,7 @@ def obtener_tipo_taller(id_tipo_taller):
 
 @tipo_taller_bp.route('/', methods=['POST'])
 @requiere_roles(ID_ROL_COORDINADOR)
+@auditar("tipo_taller", "crear", da.catalogo_creado("nivel"))
 def crear_tipo_taller():
     data = request.json
     id_tipo_taller = TipoTallerController.crear_tipo_taller(data)
@@ -31,6 +35,7 @@ def crear_tipo_taller():
 
 @tipo_taller_bp.route('/<int:id_tipo_taller>', methods=['PUT'])
 @requiere_roles(ID_ROL_COORDINADOR)
+@auditar("tipo_taller", "actualizar", da.catalogo_actualizado("nivel", "id_tipo_taller"))
 def actualizar_tipo_taller(id_tipo_taller):
     data = request.json
     actualizado = TipoTallerController.actualizar_tipo_taller(id_tipo_taller, data)
@@ -41,6 +46,7 @@ def actualizar_tipo_taller(id_tipo_taller):
 
 @tipo_taller_bp.route('/<int:id_tipo_taller>', methods=['DELETE'])
 @requiere_roles(ID_ROL_COORDINADOR)
+@auditar("tipo_taller", "eliminar", da.catalogo_eliminado("nivel", "id_tipo_taller"), antes=da.antes_de_eliminar_catalogo(TipoTallerDAO, "id_tipo_taller"))
 def eliminar_tipo_taller(id_tipo_taller):
     eliminado = TipoTallerController.eliminar_tipo_taller(id_tipo_taller)
     if eliminado:

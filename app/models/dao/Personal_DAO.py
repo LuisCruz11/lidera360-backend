@@ -92,7 +92,8 @@ class PersonalDAO:
 
             cursor.execute("DELETE FROM taller_personal WHERE cedula_personal = %s", (cedula,))
             if usuario:
-                cursor.execute("DELETE FROM auditoria WHERE id_usuario = %s", (usuario[0],))
+                # La auditoría se conserva: solo se desvincula el usuario eliminado.
+                cursor.execute("UPDATE auditoria SET id_usuario = NULL WHERE id_usuario = %s", (usuario[0],))
                 cursor.execute("DELETE FROM usuarios WHERE id_usuario = %s", (usuario[0],))
             cursor.execute("DELETE FROM personal WHERE cedula = %s", (cedula,))
             conexion.commit()

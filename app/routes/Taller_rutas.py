@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity
 from app.controller.Taller_Controller import TallerController
 from app.utils.auth import ID_ROL_COORDINADOR, requiere_roles
+from app.utils.auditoria import auditar
+import app.utils.descripciones_auditoria as da
 
 
 taller_bp = Blueprint('taller_bp', __name__)
@@ -44,6 +46,7 @@ def agregar_nota_taller(id_taller):
 
 @taller_bp.route('/', methods=['POST'])
 @requiere_roles(ID_ROL_COORDINADOR)
+@auditar("taller", "crear", da.taller_creado, taller=da.id_taller_creado)
 def crear_taller():
     data = request.get_json(silent=True) or {}
     campos_requeridos = ['nombre', 'id_tipo_taller', 'fecha_inicio', 'fecha_fin', 'id_estado']
@@ -67,6 +70,7 @@ def crear_taller():
 
 @taller_bp.route('/<int:id_taller>', methods=['PUT'])
 @requiere_roles(ID_ROL_COORDINADOR)
+@auditar("taller", "actualizar", da.taller_actualizado, taller=da.id_taller_de_la_ruta)
 def actualizar_taller(id_taller):
     data = request.get_json(silent=True) or {}
     campos_requeridos = ['nombre', 'id_tipo_taller', 'fecha_inicio', 'fecha_fin', 'id_estado']
@@ -92,6 +96,7 @@ def actualizar_taller(id_taller):
 
 @taller_bp.route('/<int:id_taller>', methods=['DELETE'])
 @requiere_roles(ID_ROL_COORDINADOR)
+@auditar("taller", "eliminar", da.taller_eliminado, antes=da.antes_de_eliminar_taller)
 def eliminar_taller(id_taller):
     try:
         eliminado = TallerController.eliminar_taller(id_taller)

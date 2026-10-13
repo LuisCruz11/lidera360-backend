@@ -3,6 +3,7 @@ from datetime import date
 from app.models.dao.Reporte_DAO import ReporteDAO
 from app.models.dao.Taller_DAO import TallerDAO
 from app.utils.reporte_excel import generar_excel
+from app.utils.fechas import hoy
 
 
 def _nombre_completo(fila):
@@ -68,18 +69,23 @@ def _reporte_clientes(_parametros):
     return "Clientes y progreso", columnas, filas, []
 
 
-def _reporte_inscripciones(parametros):
+def _rango_fechas(parametros):
     desde = _fecha(parametros.get("fecha_desde"), "inicial")
     hasta = _fecha(parametros.get("fecha_hasta"), "final")
     if desde and hasta and hasta < desde:
         raise ValueError("La fecha final no puede ser anterior a la fecha inicial")
-    id_taller = _id_taller(parametros.get("id_taller"))
 
     filtros = []
     if desde:
         filtros.append(f"Desde {desde.strftime('%d/%m/%Y')}")
     if hasta:
         filtros.append(f"Hasta {hasta.strftime('%d/%m/%Y')}")
+    return desde, hasta, filtros
+
+
+def _reporte_inscripciones(parametros):
+    desde, hasta, filtros = _rango_fechas(parametros)
+    id_taller = _id_taller(parametros.get("id_taller"))
     if id_taller:
         filtros.append(f"Taller: {_nombre_taller(id_taller)}")
 
@@ -156,11 +162,50 @@ def _reporte_asistencia(parametros):
     return "Asistencia", columnas, filas, filtros
 
 
+MODULOS_AUDITORIA = {
+    "clientes": "Clientes",
+    "taller": "Talleres",
+    "personal": "Personal",
+    "inscripcion": "Inscripciones",
+    "usuarios": "Usuarios",
+    "estados": "Estados",
+    "roles": "Roles",
+    "tipo_taller": "Niveles",
+    "progreso_cliente": "Progreso",
+    "taller_personal": "Asignaciones",
+    "reportes": "Reportes",
+    "asistencia": "Asistencia",
+}
+
+
+def _reporte_auditoria(parametros):
+    desde, hasta, filtros = _rango_fechas(parametros)
+    filas = [
+        {
+            **fila,
+            "usuario": fila.get("usuario") or "(usuario eliminado)",
+            "modulo": MODULOS_AUDITORIA.get(fila.get("tabla"), fila.get("tabla")),
+        }
+        for fila in ReporteDAO.auditoria(desde, hasta)
+    ]
+    columnas = [
+        {"clave": "fecha", "titulo": "Fecha y hora", "ancho": 17, "formato": "fecha_hora"},
+        {"clave": "usuario", "titulo": "Usuario", "ancho": 18},
+        {"clave": "rol", "titulo": "Rol", "ancho": 18},
+        {"clave": "modulo", "titulo": "Módulo", "ancho": 15},
+        {"clave": "accion", "titulo": "Acción", "ancho": 14},
+        {"clave": "descripcion", "titulo": "Descripción", "ancho": 70, "ajustar": True},
+        {"clave": "taller", "titulo": "Taller", "ancho": 24},
+    ]
+    return "Auditoría", columnas, filas, filtros
+
+
 REPORTES = {
     "clientes": _reporte_clientes,
     "inscripciones": _reporte_inscripciones,
     "talleres": _reporte_talleres,
     "asistencia": _reporte_asistencia,
+    "auditoria": _reporte_auditoria,
 }
 
 
@@ -175,5 +220,5 @@ class ReporteServicio:
 
         titulo, columnas, filas, filtros = construir(parametros)
         contenido = generar_excel(titulo, columnas, filas, filtros)
-        nombre_archivo = f"Lidera360-{tipo}-{date.today().isoformat()}.xlsx"
+        nombre_archivo = f"Lidera360-{tipo}-{hoy().isoformat()}.xlsx"
         return contenido, nombre_archivo

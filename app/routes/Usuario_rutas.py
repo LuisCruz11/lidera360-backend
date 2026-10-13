@@ -3,6 +3,8 @@ from flask_jwt_extended import get_jwt_identity
 from app.controller.Usuario_Controller import UsuarioController
 from app.extensions import limiter
 from app.utils.auth import ID_ROL_COORDINADOR, requiere_propio_usuario, requiere_roles
+from app.utils.auditoria import auditar
+import app.utils.descripciones_auditoria as da
 
 usuario_bp = Blueprint('usuario_bp', __name__)
 
@@ -101,6 +103,7 @@ def restablecer_password():
 
 @usuario_bp.route('/<int:id_usuario>', methods=['PUT'])
 @requiere_roles(ID_ROL_COORDINADOR)
+@auditar("usuarios", "actualizar", da.usuario_actualizado, antes=da.antes_de_modificar_usuario)
 def actualizar_usuario(id_usuario):
     data = request.json
     actualizado = UsuarioController.actualizar_usuario(id_usuario, data)
@@ -123,6 +126,7 @@ def cambiar_password(id_usuario):
 
 @usuario_bp.route('/<int:id_usuario>', methods=['DELETE'])
 @requiere_roles(ID_ROL_COORDINADOR)
+@auditar("usuarios", "eliminar", da.usuario_eliminado, antes=da.antes_de_modificar_usuario)
 def eliminar_usuario(id_usuario):
     try:
         eliminado = UsuarioController.eliminar_usuario(id_usuario)

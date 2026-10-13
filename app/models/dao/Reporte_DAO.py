@@ -115,6 +115,28 @@ class ReporteDAO:
         """)
 
     @staticmethod
+    def auditoria(fecha_desde=None, fecha_hasta=None):
+        condiciones, parametros = [], []
+        if fecha_desde:
+            condiciones.append("a.fecha >= %s")
+            parametros.append(fecha_desde)
+        if fecha_hasta:
+            condiciones.append("a.fecha < DATE_ADD(%s, INTERVAL 1 DAY)")
+            parametros.append(fecha_hasta)
+        filtro = f"WHERE {' AND '.join(condiciones)}" if condiciones else ""
+
+        return _consultar(f"""
+            SELECT a.fecha, u.username AS usuario, r.nombre AS rol,
+                   a.tabla, a.accion, a.descripcion, t.nombre AS taller
+            FROM auditoria a
+            LEFT JOIN usuarios u ON u.id_usuario = a.id_usuario
+            LEFT JOIN roles r ON r.id_rol = u.id_rol
+            LEFT JOIN taller t ON t.id_taller = a.id_taller
+            {filtro}
+            ORDER BY a.fecha DESC, a.id_auditoria DESC
+        """, tuple(parametros))
+
+    @staticmethod
     def asistencia(id_taller=None):
         filtro = "WHERE i.id_taller = %s" if id_taller else ""
         return _consultar(f"""

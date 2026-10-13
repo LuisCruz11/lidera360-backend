@@ -188,7 +188,8 @@ class UsuarioDAO:
         conexion = Db.obtener_conexion()
         try:
             cursor = conexion.cursor()
-            cursor.execute("DELETE FROM auditoria WHERE id_usuario = %s", (id_usuario,))
+            # La auditoría se conserva: solo se desvincula el usuario eliminado.
+            cursor.execute("UPDATE auditoria SET id_usuario = NULL WHERE id_usuario = %s", (id_usuario,))
             cursor.execute("DELETE FROM usuarios WHERE id_usuario = %s", (id_usuario,))
             conexion.commit()
             return cursor.rowcount > 0

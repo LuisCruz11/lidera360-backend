@@ -9,6 +9,7 @@ from app.services.Asignacion_Taller import (
     validar_cedula_personal,
 )
 from app.services.Taller_Servicio import TallerServicio
+from app.utils.fechas import hoy
 
 
 def _validar(id_taller, cedula_personal):
@@ -28,7 +29,7 @@ def _validar_fecha_sesion(id_taller, fecha):
         raise ValueError("La fecha es anterior al inicio del taller")
     if taller.fecha_fin and fecha > taller.fecha_fin:
         raise ValueError("La fecha es posterior al fin del taller")
-    if fecha > date.today():
+    if fecha > hoy():
         raise ValueError("No puedes registrar asistencia de una fecha futura")
 
 

@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity
 from app.controller.Cliente_Controller import ClienteController
 from app.utils.auth import ID_ROL_COORDINADOR, requiere_propio_cliente, requiere_roles
+from app.utils.auditoria import auditar
+import app.utils.descripciones_auditoria as da
 
 cliente_bp = Blueprint('cliente_bp', __name__)
 
@@ -64,6 +66,7 @@ def actualizar_contacto(cedula):
 
 @cliente_bp.route('/', methods=['POST'])
 @requiere_roles(ID_ROL_COORDINADOR)
+@auditar("clientes", "crear", da.cliente_creado)
 def crear_cliente():
     data = request.get_json(silent=True) or {}
     campos_requeridos = ['cedula', 'nombres', 'apellidos', 'sexo', 'edad', 'id_estado', 'username', 'password']
@@ -92,6 +95,7 @@ def crear_cliente():
 
 @cliente_bp.route('/<cedula>', methods=['PUT'])
 @requiere_roles(ID_ROL_COORDINADOR)
+@auditar("clientes", "actualizar", da.cliente_actualizado)
 def actualizar_cliente(cedula):
     data = request.get_json(silent=True) or {}
     campos_requeridos = ['nombres', 'apellidos', 'sexo', 'edad', 'id_estado']
@@ -122,6 +126,7 @@ def actualizar_cliente(cedula):
 
 @cliente_bp.route('/<cedula>', methods=['DELETE'])
 @requiere_roles(ID_ROL_COORDINADOR)
+@auditar("clientes", "eliminar", da.cliente_eliminado, antes=da.antes_de_eliminar_cliente)
 def eliminar_cliente(cedula):
     try:
         eliminado = ClienteController.eliminar_cliente(cedula)
