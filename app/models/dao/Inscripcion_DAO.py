@@ -127,6 +127,7 @@ class InscripcionDAO:
         conexion = Db.obtener_conexion()
         try:
             cursor = conexion.cursor()
+            cursor.execute("DELETE FROM certificado WHERE id_inscripcion = %s", (id_inscripcion,))
             cursor.execute("DELETE FROM inscripcion WHERE id_inscripcion = %s", (id_inscripcion,))
             conexion.commit()
             return cursor.rowcount > 0

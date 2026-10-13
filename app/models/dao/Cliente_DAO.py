@@ -29,7 +29,8 @@ class ClienteDAO:
             "estado": fila.get("estado_inscripcion") or fila.get("estado_taller") or "",
             "fecha_inscripcion": ClienteDAO._fecha_iso(fila.get("fecha_inscripcion")),
             "coach": fila.get("coach") or "",
-            "puede_cancelar": ClienteDAO._puede_cancelar(fila)
+            "puede_cancelar": ClienteDAO._puede_cancelar(fila),
+            "codigo_certificado": fila.get("codigo_certificado")
         }
 
     @staticmethod
@@ -134,13 +135,15 @@ class ClienteDAO:
                        t.fecha_inicio, t.fecha_fin,
                        t.id_estado AS id_estado_taller,
                        et.nombre AS estado_taller,
-                       coaches.coach
+                       coaches.coach,
+                       ce.codigo AS codigo_certificado
                 FROM inscripcion i
                 INNER JOIN taller t ON t.id_taller = i.id_taller
                 LEFT JOIN tipo_taller tt ON tt.id_tipo_taller = t.id_tipo_taller
                 LEFT JOIN estados ei ON ei.id_estado = i.id_estado
                 LEFT JOIN estados et ON et.id_estado = t.id_estado
                 LEFT JOIN ({coaches_sql}) coaches ON coaches.id_taller = t.id_taller
+                LEFT JOIN certificado ce ON ce.id_inscripcion = i.id_inscripcion AND ce.anulado = 0
                 WHERE i.cliente_cedula = %s
                 ORDER BY i.fecha_inscripcion DESC, t.fecha_inicio DESC, t.nombre ASC
             """, (cedula,))
@@ -294,6 +297,7 @@ class ClienteDAO:
                     "Solo puedes cancelar inscripciones en estado Iniciado de talleres que aún no comienzan"
                 )
 
+            cursor.execute("DELETE FROM certificado WHERE id_inscripcion = %s", (id_inscripcion,))
             cursor.execute("DELETE FROM inscripcion WHERE id_inscripcion = %s", (id_inscripcion,))
             cursor.execute("""
                 INSERT INTO auditoria (id_usuario, tabla, accion, descripcion, id_taller)
@@ -408,6 +412,11 @@ class ClienteDAO:
             cursor.execute("SELECT id_usuario FROM usuarios WHERE cedula_cliente = %s", (cedula,))
             usuario = cursor.fetchone()
 
+            cursor.execute("""
+                DELETE ce FROM certificado ce
+                INNER JOIN inscripcion i ON i.id_inscripcion = ce.id_inscripcion
+                WHERE i.cliente_cedula = %s
+            """, (cedula,))
             cursor.execute("DELETE FROM inscripcion WHERE cliente_cedula = %s", (cedula,))
             cursor.execute("DELETE FROM progreso_cliente WHERE cliente_cedula = %s", (cedula,))
             if usuario:

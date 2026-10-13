@@ -1,6 +1,7 @@
 from app.models.dao.Inscripcion_DAO import InscripcionDAO
 from app.models.dto.Inscripcion_DTO import InscripcionDTO
 from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
+from app.models.dao.Certificado_DAO import CertificadoDAO
 from app.database.Db import Db
 from datetime import date
 
@@ -42,6 +43,7 @@ class InscripcionServicio:
         try:
             id_inscripcion = InscripcionDAO.crear(inscripcion, conexion)
             nivel_nuevo = ProgresoClienteDAO.avanzar_si_aprobo(id_inscripcion, id_usuario, conexion)
+            CertificadoDAO.sincronizar(id_inscripcion, conexion)
             conexion.commit()
             return id_inscripcion, nivel_nuevo
         except Exception:
@@ -66,6 +68,7 @@ class InscripcionServicio:
             nivel_nuevo = None
             if actualizado:
                 nivel_nuevo = ProgresoClienteDAO.avanzar_si_aprobo(id_inscripcion, id_usuario, conexion)
+                CertificadoDAO.sincronizar(id_inscripcion, conexion)
             conexion.commit()
             return actualizado, nivel_nuevo
         except Exception:

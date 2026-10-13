@@ -3,6 +3,7 @@ from app.models.dao.Inscripcion_DAO import InscripcionDAO
 from app.models.dao.Estado_DAO import EstadoDAO
 from app.models.dao.Auditoria_DAO import AuditoriaDAO
 from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
+from app.models.dao.Certificado_DAO import CertificadoDAO
 from app.models.dto.Auditoria_DTO import AuditoriaDTO
 from app.database.Db import Db
 
@@ -74,6 +75,7 @@ class CoachServicio:
                 conexion
             )
             nivel_nuevo = ProgresoClienteDAO.avanzar_si_aprobo(id_inscripcion, id_usuario, conexion)
+            CertificadoDAO.sincronizar(id_inscripcion, conexion)
             conexion.commit()
             return nivel_nuevo
         except Exception:

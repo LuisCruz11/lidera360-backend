@@ -225,6 +225,11 @@ class TallerDAO:
             cursor = conexion.cursor()
             cursor.execute("DELETE FROM taller_personal WHERE id_taller = %s", (id_taller,))
             cursor.execute("DELETE FROM auditoria WHERE id_taller = %s", (id_taller,))
+            cursor.execute("""
+                DELETE ce FROM certificado ce
+                INNER JOIN inscripcion i ON i.id_inscripcion = ce.id_inscripcion
+                WHERE i.id_taller = %s
+            """, (id_taller,))
             cursor.execute("DELETE FROM inscripcion WHERE id_taller = %s", (id_taller,))
             cursor.execute("DELETE FROM taller WHERE id_taller = %s", (id_taller,))
             conexion.commit()
