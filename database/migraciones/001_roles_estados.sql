@@ -24,8 +24,8 @@ INSERT INTO estados (id_estado, nombre) VALUES
   (5, 'No aprobado'),
   (6, 'Finalizado'),
   (7, 'Planificado'),
-  (8, 'En progreso')
-ON DUPLICATE KEY UPDATE nombre = VALUES(nombre);
+  (8, 'En progreso') AS nuevo
+ON DUPLICATE KEY UPDATE nombre = nuevo.nombre;
 
 -- 3. Integridad: evitar inscripciones y asignaciones duplicadas.
 ALTER TABLE inscripcion
