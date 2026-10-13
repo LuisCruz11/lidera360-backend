@@ -1,20 +1,20 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity
 from app.controller.Taller_Controller import TallerController
-from app.utils.auth import ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO, requiere_roles
+from app.utils.auth import ID_ROL_COORDINADOR, requiere_roles
 
 
 taller_bp = Blueprint('taller_bp', __name__)
 
 
 @taller_bp.route('/', methods=['GET'])
-@requiere_roles(ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO)
+@requiere_roles(ID_ROL_COORDINADOR)
 def obtener_talleres():
     return jsonify(TallerController.obtener_talleres())
 
 
 @taller_bp.route('/<int:id_taller>', methods=['GET'])
-@requiere_roles(ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO)
+@requiere_roles(ID_ROL_COORDINADOR)
 def obtener_taller(id_taller):
     taller = TallerController.obtener_taller(id_taller)
     if taller:
@@ -23,7 +23,7 @@ def obtener_taller(id_taller):
 
 
 @taller_bp.route('/<int:id_taller>/detalle', methods=['GET'])
-@requiere_roles(ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO)
+@requiere_roles(ID_ROL_COORDINADOR)
 def obtener_detalle_taller(id_taller):
     detalle = TallerController.obtener_detalle(id_taller)
     if detalle:
@@ -32,7 +32,7 @@ def obtener_detalle_taller(id_taller):
 
 
 @taller_bp.route('/<int:id_taller>/notas', methods=['POST'])
-@requiere_roles(ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO)
+@requiere_roles(ID_ROL_COORDINADOR)
 def agregar_nota_taller(id_taller):
     data = request.get_json(silent=True) or {}
     try:

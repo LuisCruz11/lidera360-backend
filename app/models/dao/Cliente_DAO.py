@@ -326,6 +326,29 @@ class ClienteDAO:
             conexion.close()
 
     @staticmethod
+    def obtener_por_personal_asignado(cedula_personal, rol_en_taller):
+        """Clientes inscritos en los talleres donde la persona está asignada con ese rol."""
+        conexion = Db.obtener_conexion()
+        try:
+            cursor = conexion.cursor(pymysql.cursors.DictCursor)
+            cursor.execute("""
+                SELECT c.cedula, c.nombres, c.apellidos, c.correo, c.telefono,
+                       e.nombre AS estado,
+                       GROUP_CONCAT(DISTINCT t.nombre ORDER BY t.nombre SEPARATOR ', ') AS talleres
+                FROM clientes c
+                INNER JOIN inscripcion i ON i.cliente_cedula = c.cedula
+                INNER JOIN taller t ON t.id_taller = i.id_taller
+                INNER JOIN taller_personal tp ON tp.id_taller = i.id_taller
+                LEFT JOIN estados e ON e.id_estado = c.id_estado
+                WHERE tp.cedula_personal = %s AND LOWER(TRIM(tp.rol_en_taller)) = %s
+                GROUP BY c.cedula, c.nombres, c.apellidos, c.correo, c.telefono, e.nombre
+                ORDER BY c.nombres ASC, c.apellidos ASC
+            """, (cedula_personal, rol_en_taller.lower()))
+            return cursor.fetchall()
+        finally:
+            conexion.close()
+
+    @staticmethod
     def obtener_por_correo(correo):
         conexion = Db.obtener_conexion()
         try:

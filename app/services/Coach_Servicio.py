@@ -5,28 +5,18 @@ from app.models.dao.Auditoria_DAO import AuditoriaDAO
 from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
 from app.models.dto.Auditoria_DTO import AuditoriaDTO
 from app.database.Db import Db
-
-ROL_EN_TALLER_COACH = 'coach'
+from app.services.Asignacion_Taller import ROL_EN_TALLER_COACH, validar_asignacion, validar_cedula_personal
 
 
 class CoachServicio:
 
     @staticmethod
-    def _validar_cedula_personal(cedula_personal):
-        if not cedula_personal:
-            raise PermissionError("Tu usuario no está vinculado a un registro de personal")
-
-    @staticmethod
     def _validar_asignacion(id_taller, cedula_personal):
-        CoachServicio._validar_cedula_personal(cedula_personal)
-        if not TallerDAO.obtener_por_id(id_taller):
-            raise LookupError("Taller no encontrado")
-        if not TallerDAO.tiene_personal_asignado(id_taller, cedula_personal, ROL_EN_TALLER_COACH):
-            raise PermissionError("No estás asignado como coach de este taller")
+        validar_asignacion(id_taller, cedula_personal, ROL_EN_TALLER_COACH)
 
     @staticmethod
     def listar_talleres(cedula_personal):
-        CoachServicio._validar_cedula_personal(cedula_personal)
+        validar_cedula_personal(cedula_personal)
         return TallerDAO.obtener_por_personal(cedula_personal, ROL_EN_TALLER_COACH)
 
     @staticmethod
