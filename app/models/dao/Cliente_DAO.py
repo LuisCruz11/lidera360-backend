@@ -1,6 +1,10 @@
 from app.database.Db import Db
 from app.models.dto.Cliente_DTO import ClienteDTO
 import pymysql
+from datetime import date
+
+ESTADO_INSCRIPCION_INICIAL = 'iniciado'
+ESTADOS_TALLER_NO_DISPONIBLE = ('inactivo', 'finalizado')
 
 
 class ClienteDAO:
@@ -24,8 +28,17 @@ class ClienteDAO:
             "id_estado_inscripcion": fila.get("id_estado_inscripcion"),
             "estado": fila.get("estado_inscripcion") or fila.get("estado_taller") or "",
             "fecha_inscripcion": ClienteDAO._fecha_iso(fila.get("fecha_inscripcion")),
-            "coach": fila.get("coach") or ""
+            "coach": fila.get("coach") or "",
+            "puede_cancelar": ClienteDAO._puede_cancelar(fila)
         }
+
+    @staticmethod
+    def _puede_cancelar(fila):
+        if not fila.get("id_inscripcion"):
+            return False
+        estado = (fila.get("estado_inscripcion") or "").lower()
+        fecha_inicio = fila.get("fecha_inicio")
+        return estado == ESTADO_INSCRIPCION_INICIAL and bool(fecha_inicio) and fecha_inicio > date.today()
 
     @staticmethod
     def _es_taller_en_curso(taller):
@@ -107,8 +120,7 @@ class ClienteDAO:
                        ) AS coach
                 FROM taller_personal tp
                 INNER JOIN personal p ON p.cedula = tp.cedula_personal
-                INNER JOIN roles r ON r.id_rol = tp.id_rol
-                WHERE LOWER(r.nombre) = 'coach'
+                WHERE LOWER(TRIM(tp.rol_en_taller)) = 'coach'
                 GROUP BY tp.id_taller
             """
 
@@ -151,7 +163,8 @@ class ClienteDAO:
                     LEFT JOIN estados et ON et.id_estado = t.id_estado
                     LEFT JOIN ({coaches_sql}) coaches ON coaches.id_taller = t.id_taller
                     WHERE t.id_tipo_taller = %s
-                      AND (et.nombre IS NULL OR LOWER(et.nombre) <> 'inactivo')
+                      AND (et.nombre IS NULL OR LOWER(et.nombre) NOT IN ('inactivo', 'finalizado'))
+                      AND (t.fecha_fin IS NULL OR t.fecha_fin >= CURDATE())
                       AND NOT EXISTS (
                           SELECT 1
                           FROM inscripcion i
@@ -192,7 +205,7 @@ class ClienteDAO:
                 raise ValueError("Cliente no encontrado")
 
             cursor.execute("""
-                SELECT t.id_taller, t.id_tipo_taller, e.nombre AS estado_taller
+                SELECT t.id_taller, t.id_tipo_taller, t.fecha_fin, e.nombre AS estado_taller
                 FROM taller t
                 LEFT JOIN estados e ON e.id_estado = t.id_estado
                 WHERE t.id_taller = %s
@@ -201,8 +214,11 @@ class ClienteDAO:
             if not taller:
                 raise ValueError("Taller no encontrado")
 
-            if (taller.get("estado_taller") or "").lower() == "inactivo":
+            if (taller.get("estado_taller") or "").lower() in ESTADOS_TALLER_NO_DISPONIBLE:
                 raise ValueError("El taller no está disponible")
+
+            if taller.get("fecha_fin") and taller["fecha_fin"] < date.today():
+                raise ValueError("El taller ya terminó")
 
             cursor.execute("""
                 SELECT id_tipo_taller
@@ -242,6 +258,59 @@ class ClienteDAO:
         except Exception:
             conexion.rollback()
             raise
+        finally:
+            conexion.close()
+
+    @staticmethod
+    def cancelar_inscripcion(cedula, id_inscripcion, id_usuario):
+        conexion = Db.obtener_conexion()
+        try:
+            cursor = conexion.cursor(pymysql.cursors.DictCursor)
+            cursor.execute("""
+                SELECT i.id_inscripcion, i.id_taller, t.nombre AS taller_nombre, t.fecha_inicio,
+                       ei.nombre AS estado_inscripcion
+                FROM inscripcion i
+                INNER JOIN taller t ON t.id_taller = i.id_taller
+                LEFT JOIN estados ei ON ei.id_estado = i.id_estado
+                WHERE i.id_inscripcion = %s AND i.cliente_cedula = %s
+            """, (id_inscripcion, cedula))
+            inscripcion = cursor.fetchone()
+            if not inscripcion:
+                raise LookupError("Inscripción no encontrada")
+
+            if not ClienteDAO._puede_cancelar(inscripcion):
+                raise ValueError(
+                    "Solo puedes cancelar inscripciones en estado Iniciado de talleres que aún no comienzan"
+                )
+
+            cursor.execute("DELETE FROM inscripcion WHERE id_inscripcion = %s", (id_inscripcion,))
+            cursor.execute("""
+                INSERT INTO auditoria (id_usuario, tabla, accion, descripcion, id_taller)
+                VALUES (%s, 'inscripcion', 'cancelacion', %s, %s)
+            """, (
+                id_usuario,
+                f"El cliente {cedula} canceló su inscripción al taller {inscripcion['taller_nombre']}",
+                inscripcion["id_taller"]
+            ))
+            conexion.commit()
+        except Exception:
+            conexion.rollback()
+            raise
+        finally:
+            conexion.close()
+
+    @staticmethod
+    def actualizar_contacto(cedula, correo, telefono):
+        conexion = Db.obtener_conexion()
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("""
+                UPDATE clientes
+                SET correo = %s, telefono = %s
+                WHERE cedula = %s
+            """, (correo, telefono, cedula))
+            conexion.commit()
+            return cursor.rowcount > 0
         finally:
             conexion.close()
 

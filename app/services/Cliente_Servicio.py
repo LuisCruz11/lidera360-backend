@@ -44,6 +44,26 @@ class ClienteServicio:
         return ClienteDAO.inscribir_en_taller(cedula, id_taller)
 
     @staticmethod
+    def cancelar_inscripcion(cedula, id_inscripcion, id_usuario):
+        ClienteDAO.cancelar_inscripcion(cedula, id_inscripcion, id_usuario)
+
+    @staticmethod
+    def actualizar_contacto(cedula, data):
+        correo = (data.get('correo') or '').strip()
+        telefono = str(data.get('telefono') or '').strip()
+        validar_correo(correo, obligatorio=True)
+        validar_telefono(telefono, obligatorio=True)
+
+        if not ClienteDAO.obtener_por_cedula(cedula):
+            raise LookupError("Cliente no encontrado")
+
+        existente = ClienteDAO.obtener_por_correo(correo)
+        if existente and str(existente.cedula) != str(cedula):
+            raise ValueError("El correo ya esta registrado")
+
+        ClienteDAO.actualizar_contacto(cedula, correo, telefono)
+
+    @staticmethod
     def crear_cliente(data):
         validar_cedula(data['cedula'])
         validar_nombre(data['nombres'], "El nombre")

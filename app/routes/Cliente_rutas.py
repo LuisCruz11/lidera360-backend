@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import get_jwt_identity
 from app.controller.Cliente_Controller import ClienteController
 from app.utils.auth import ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO, requiere_propio_cliente, requiere_roles
 
@@ -35,6 +36,29 @@ def inscribir_cliente_en_taller(cedula):
             "mensaje": "Inscripcion creada",
             "id_inscripcion": id_inscripcion
         }), 201
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 400
+
+@cliente_bp.route('/<cedula>/inscripciones/<int:id_inscripcion>', methods=['DELETE'])
+@requiere_propio_cliente
+def cancelar_inscripcion(cedula, id_inscripcion):
+    try:
+        ClienteController.cancelar_inscripcion(cedula, id_inscripcion, get_jwt_identity())
+        return jsonify({"mensaje": "Inscripción cancelada"})
+    except LookupError as error:
+        return jsonify({"mensaje": str(error)}), 404
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 400
+
+@cliente_bp.route('/<cedula>/perfil', methods=['PUT'])
+@requiere_propio_cliente
+def actualizar_contacto(cedula):
+    data = request.get_json(silent=True) or {}
+    try:
+        ClienteController.actualizar_contacto(cedula, data)
+        return jsonify({"mensaje": "Datos de contacto actualizados"})
+    except LookupError as error:
+        return jsonify({"mensaje": str(error)}), 404
     except ValueError as error:
         return jsonify({"mensaje": str(error)}), 400
 

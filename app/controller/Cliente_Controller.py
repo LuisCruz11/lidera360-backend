@@ -19,6 +19,14 @@ class ClienteController:
         return ClienteServicio.inscribir_en_taller(cedula, data)
 
     @staticmethod
+    def cancelar_inscripcion(cedula, id_inscripcion, id_usuario):
+        ClienteServicio.cancelar_inscripcion(cedula, id_inscripcion, id_usuario)
+
+    @staticmethod
+    def actualizar_contacto(cedula, data):
+        ClienteServicio.actualizar_contacto(cedula, data)
+
+    @staticmethod
     def crear_cliente(data):
         ClienteServicio.crear_cliente(data)
 
