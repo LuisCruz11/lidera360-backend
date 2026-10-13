@@ -14,9 +14,9 @@ class Config:
     DB_PASSWORD = os.getenv("DB_PASSWORD")
     DB_NAME = os.getenv("DB_NAME")
 
-    RESEND_API_KEY = os.getenv("RESEND_API_KEY")
-    RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev")
-    RESEND_TIMEOUT = int(os.getenv("RESEND_TIMEOUT", 10))
+    BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+    BREVO_SENDER_EMAIL = os.getenv("BREVO_SENDER_EMAIL")
+    BREVO_SENDER_NAME = os.getenv("BREVO_SENDER_NAME", "Lidera360")
 
     FRONTEND_URL = os.getenv("FRONTEND_URL", "https://lidera360-frontend.onrender.com").rstrip("/")
 

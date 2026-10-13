@@ -4,29 +4,16 @@ import urllib.error
 import urllib.request
 
 
-def _enviar_correo(destinatario, asunto, texto, html):
-    api_key = current_app.config.get("RESEND_API_KEY")
-
-    if not api_key:
-        raise ValueError("RESEND_API_KEY no esta configurada")
-
-    payload = {
-        "from": current_app.config.get("RESEND_FROM_EMAIL"),
-        "to": [destinatario],
-        "subject": asunto,
-        "text": texto,
-        "html": html
-    }
-
+def _post_json(url, payload, headers, proveedor):
     request = urllib.request.Request(
-        "https://api.resend.com/emails",
+        url,
         data=json.dumps(payload).encode("utf-8"),
         headers={
-            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
-            # Cloudflare (delante de la API de Resend) bloquea el User-Agent por defecto
+            # Cloudflare (delante de estas APIs) bloquea el User-Agent por defecto
             # de urllib ("Python-urllib/3.x") con el error 1010.
-            "User-Agent": "Lidera360/1.0"
+            "User-Agent": "Lidera360/1.0",
+            **headers
         },
         method="POST"
     )
@@ -36,10 +23,50 @@ def _enviar_correo(destinatario, asunto, texto, html):
             request,
             timeout=current_app.config.get("RESEND_TIMEOUT")
         ) as response:
-            return json.loads(response.read().decode("utf-8"))
+            return json.loads(response.read().decode("utf-8") or "{}")
     except urllib.error.HTTPError as error:
         detalle = error.read().decode("utf-8")
-        raise RuntimeError(f"Resend respondio {error.code}: {detalle}") from error
+        raise RuntimeError(f"{proveedor} respondio {error.code}: {detalle}") from error
+
+
+def _enviar_con_brevo(api_key, destinatario, asunto, texto, html):
+    remitente = current_app.config.get("BREVO_SENDER_EMAIL")
+    if not remitente:
+        raise ValueError("BREVO_SENDER_EMAIL no esta configurada")
+
+    payload = {
+        "sender": {"name": current_app.config.get("BREVO_SENDER_NAME"), "email": remitente},
+        "to": [{"email": destinatario}],
+        "subject": asunto,
+        "textContent": texto,
+        "htmlContent": html
+    }
+    return _post_json("https://api.brevo.com/v3/smtp/email", payload, {"api-key": api_key}, "Brevo")
+
+
+def _enviar_con_resend(api_key, destinatario, asunto, texto, html):
+    payload = {
+        "from": current_app.config.get("RESEND_FROM_EMAIL"),
+        "to": [destinatario],
+        "subject": asunto,
+        "text": texto,
+        "html": html
+    }
+    return _post_json("https://api.resend.com/emails", payload, {"Authorization": f"Bearer {api_key}"}, "Resend")
+
+
+def _enviar_correo(destinatario, asunto, texto, html):
+    # Brevo permite usar como remitente un Gmail verificado (sin dominio propio);
+    # si no está configurado, se usa Resend.
+    brevo_api_key = current_app.config.get("BREVO_API_KEY")
+    if brevo_api_key:
+        return _enviar_con_brevo(brevo_api_key, destinatario, asunto, texto, html)
+
+    resend_api_key = current_app.config.get("RESEND_API_KEY")
+    if resend_api_key:
+        return _enviar_con_resend(resend_api_key, destinatario, asunto, texto, html)
+
+    raise ValueError("No hay un proveedor de correo configurado (BREVO_API_KEY o RESEND_API_KEY)")
 
 
 def enviar_correo_registro(destinatario, nombre):
