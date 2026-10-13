@@ -18,6 +18,31 @@ class UsuarioDAO:
         return [UsuarioDTO(*fila) for fila in resultados]
 
     @staticmethod
+    def obtener_por_correo(correo):
+        """Usuario activo cuyo cliente o personal vinculado tiene ese correo.
+        Devuelve (UsuarioDTO, nombre, correo) o None."""
+        conexion = Db.obtener_conexion()
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("""
+                SELECT u.id_usuario, u.username, u.password, u.id_rol, u.cedula_personal, u.activo, u.cedula_cliente,
+                       COALESCE(c.nombres, p.nombres, u.username) AS nombre,
+                       COALESCE(c.correo, p.correo) AS correo
+                FROM usuarios u
+                LEFT JOIN clientes c ON c.cedula = u.cedula_cliente
+                LEFT JOIN personal p ON p.cedula = u.cedula_personal
+                WHERE u.activo = 1 AND (LOWER(c.correo) = LOWER(%s) OR LOWER(p.correo) = LOWER(%s))
+                LIMIT 1
+            """, (correo, correo))
+            fila = cursor.fetchone()
+        finally:
+            conexion.close()
+
+        if not fila:
+            return None
+        return UsuarioDTO(*fila[:7]), fila[7], fila[8]
+
+    @staticmethod
     def obtener_por_id(id_usuario):
         conexion = Db.obtener_conexion()
         try:

@@ -18,6 +18,8 @@ class Config:
     RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev")
     RESEND_TIMEOUT = int(os.getenv("RESEND_TIMEOUT", 10))
 
+    FRONTEND_URL = os.getenv("FRONTEND_URL", "https://lidera360-frontend.onrender.com").rstrip("/")
+
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(
         hours=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES_HORAS", 8))

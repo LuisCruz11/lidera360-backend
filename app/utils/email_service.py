@@ -4,33 +4,16 @@ import urllib.error
 import urllib.request
 
 
-def enviar_correo_registro(destinatario, nombre):
+def _enviar_correo(destinatario, asunto, texto, html):
     api_key = current_app.config.get("RESEND_API_KEY")
 
     if not api_key:
         raise ValueError("RESEND_API_KEY no esta configurada")
 
-    texto = f"""
-Hola {nombre},
-
-Te has registrado correctamente en Lidera360.
-
-Ahora puedes iniciar tu proceso de transformacion personal.
-
-Equipo Lidera360
-"""
-
-    html = f"""
-<p>Hola {nombre},</p>
-<p>Te has registrado correctamente en Lidera360.</p>
-<p>Ahora puedes iniciar tu proceso de transformacion personal.</p>
-<p>Equipo Lidera360</p>
-"""
-
     payload = {
         "from": current_app.config.get("RESEND_FROM_EMAIL"),
         "to": [destinatario],
-        "subject": "Bienvenido a Lidera360",
+        "subject": asunto,
         "text": texto,
         "html": html
     }
@@ -54,3 +37,49 @@ Equipo Lidera360
     except urllib.error.HTTPError as error:
         detalle = error.read().decode("utf-8")
         raise RuntimeError(f"Resend respondio {error.code}: {detalle}") from error
+
+
+def enviar_correo_registro(destinatario, nombre):
+    texto = f"""
+Hola {nombre},
+
+Te has registrado correctamente en Lidera360.
+
+Ahora puedes iniciar tu proceso de transformacion personal.
+
+Equipo Lidera360
+"""
+
+    html = f"""
+<p>Hola {nombre},</p>
+<p>Te has registrado correctamente en Lidera360.</p>
+<p>Ahora puedes iniciar tu proceso de transformacion personal.</p>
+<p>Equipo Lidera360</p>
+"""
+
+    return _enviar_correo(destinatario, "Bienvenido a Lidera360", texto, html)
+
+
+def enviar_correo_recuperacion(destinatario, nombre, enlace):
+    texto = f"""
+Hola {nombre},
+
+Recibimos una solicitud para restablecer tu contraseña de Lidera360.
+
+Abre este enlace para crear una nueva (vence en 30 minutos):
+{enlace}
+
+Si no fuiste tú, ignora este correo: tu contraseña no cambiará.
+
+Equipo Lidera360
+"""
+
+    html = f"""
+<p>Hola {nombre},</p>
+<p>Recibimos una solicitud para restablecer tu contraseña de Lidera360.</p>
+<p><a href="{enlace}">Crear una nueva contraseña</a> (el enlace vence en 30 minutos).</p>
+<p>Si no fuiste tú, ignora este correo: tu contraseña no cambiará.</p>
+<p>Equipo Lidera360</p>
+"""
+
+    return _enviar_correo(destinatario, "Restablece tu contraseña de Lidera360", texto, html)

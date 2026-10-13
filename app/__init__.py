@@ -21,6 +21,8 @@ from app.routes.Personal_Capacitado_rutas import personal_capacitado_bp
 RUTAS_PUBLICAS = {
     ('/api/usuarios/login', 'POST'),
     ('/api/usuarios/registro', 'POST'),
+    ('/api/usuarios/recuperar-password', 'POST'),
+    ('/api/usuarios/restablecer-password', 'POST'),
 }
 
 

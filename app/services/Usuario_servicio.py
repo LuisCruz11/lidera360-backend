@@ -4,7 +4,8 @@ from app.models.dao.Cliente_DAO import ClienteDAO
 from app.models.dto.Cliente_DTO import ClienteDTO
 from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
 from app.models.dto.Progreso_Cliente_DTO import ProgresoClienteDTO
-from app.utils.email_service import enviar_correo_registro
+from app.utils.email_service import enviar_correo_recuperacion, enviar_correo_registro
+from app.utils.recuperacion_password import generar_token, huella_coincide, leer_token
 from app.database.Db import Db
 from app.utils.validaciones import (
     validar_cedula,
@@ -13,6 +14,7 @@ from app.utils.validaciones import (
     validar_password,
     validar_telefono,
 )
+from flask import current_app
 from flask_jwt_extended import create_access_token
 import bcrypt
 
@@ -139,6 +141,42 @@ class UsuarioServicio:
             password_nueva.encode('utf-8'),
             bcrypt.gensalt()
         )
+        UsuarioDAO.actualizar_password(id_usuario, password_cifrado.decode('utf-8'))
+
+    @staticmethod
+    def solicitar_recuperacion(data):
+        """Envía el enlace de recuperación si el correo pertenece a un usuario activo.
+        No revela si el correo existe: quien llama siempre responde lo mismo."""
+        correo = (data.get('correo') or '').strip()
+        validar_correo(correo, obligatorio=True)
+
+        encontrado = UsuarioDAO.obtener_por_correo(correo)
+        if not encontrado:
+            return
+
+        usuario, nombre, correo_destino = encontrado
+        token = generar_token(usuario.id_usuario, usuario.password)
+        enlace = f"{current_app.config['FRONTEND_URL']}/?restablecer={token}"
+        try:
+            enviar_correo_recuperacion(correo_destino, nombre, enlace)
+        except Exception as error:
+            print(f"Error enviando correo de recuperacion: {error}", flush=True)
+
+    @staticmethod
+    def restablecer_password(data):
+        token = data.get('token')
+        password_nueva = data.get('password_nueva')
+        if not token or not password_nueva:
+            raise ValueError("El enlace y la nueva contraseña son obligatorios")
+
+        id_usuario, huella = leer_token(token)
+        validar_password(password_nueva)
+
+        usuario = UsuarioDAO.obtener_por_id(id_usuario)
+        if not usuario or not usuario.activo or not huella_coincide(usuario.password, huella):
+            raise ValueError("El enlace de recuperación ya fue usado o no es válido. Solicita uno nuevo.")
+
+        password_cifrado = bcrypt.hashpw(password_nueva.encode('utf-8'), bcrypt.gensalt())
         UsuarioDAO.actualizar_password(id_usuario, password_cifrado.decode('utf-8'))
 
     @staticmethod

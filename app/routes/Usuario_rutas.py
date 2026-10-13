@@ -77,6 +77,28 @@ def registro():
     return jsonify({"mensaje": "Usuario registrado correctamente"}), 201
 
 
+@usuario_bp.route('/recuperar-password', methods=['POST'])
+@limiter.limit("5 per hour")
+def recuperar_password():
+    data = request.get_json(silent=True) or {}
+    try:
+        UsuarioController.solicitar_recuperacion(data)
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 400
+    return jsonify({
+        "mensaje": "Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña."
+    })
+
+@usuario_bp.route('/restablecer-password', methods=['POST'])
+@limiter.limit("10 per hour")
+def restablecer_password():
+    data = request.get_json(silent=True) or {}
+    try:
+        UsuarioController.restablecer_password(data)
+        return jsonify({"mensaje": "Contraseña restablecida. Ya puedes iniciar sesión."})
+    except ValueError as error:
+        return jsonify({"mensaje": str(error)}), 400
+
 @usuario_bp.route('/<int:id_usuario>', methods=['PUT'])
 @requiere_roles(ID_ROL_COORDINADOR)
 def actualizar_usuario(id_usuario):

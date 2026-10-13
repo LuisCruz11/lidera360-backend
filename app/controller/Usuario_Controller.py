@@ -19,6 +19,14 @@ class UsuarioController:
         return UsuarioServicio.registrar_cliente_usuario(data)
 
     @staticmethod
+    def solicitar_recuperacion(data):
+        return UsuarioServicio.solicitar_recuperacion(data)
+
+    @staticmethod
+    def restablecer_password(data):
+        return UsuarioServicio.restablecer_password(data)
+
+    @staticmethod
     def actualizar_usuario(id_usuario, data):
         return UsuarioServicio.actualizar_usuario(id_usuario, data)
 
