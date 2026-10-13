@@ -16,16 +16,11 @@ from app.routes.Taller_Personal_rutas import taller_personal_bp
 from app.routes.Progreso_Cliente_rutas import progreso_cliente_bp
 from app.routes.Auditoria_rutas import auditoria_bp
 from app.routes.Coach_rutas import coach_bp
-from app.routes.Certificado_rutas import certificado_bp
 
 RUTAS_PUBLICAS = {
     ('/api/usuarios/login', 'POST'),
     ('/api/usuarios/registro', 'POST'),
 }
-
-RUTAS_PUBLICAS_PREFIJO = (
-    ('/api/certificados/verificar/', 'GET'),
-)
 
 
 def crear_app():
@@ -47,9 +42,6 @@ def crear_app():
             return None
         if (request.path, request.method) in RUTAS_PUBLICAS:
             return None
-        if any(request.path.startswith(prefijo) and request.method == metodo
-               for prefijo, metodo in RUTAS_PUBLICAS_PREFIJO):
-            return None
         try:
             verify_jwt_in_request()
         except Exception:
@@ -67,6 +59,5 @@ def crear_app():
     app.register_blueprint(progreso_cliente_bp, url_prefix='/api/progresos-clientes')
     app.register_blueprint(auditoria_bp, url_prefix='/api/auditorias')
     app.register_blueprint(coach_bp, url_prefix='/api/coach')
-    app.register_blueprint(certificado_bp, url_prefix='/api/certificados')
 
     return app

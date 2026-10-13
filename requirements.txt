@@ -6,4 +6,3 @@ gunicorn
 pymysql
 bcrypt
 python-dotenv
-fpdf2

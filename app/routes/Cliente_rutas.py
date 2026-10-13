@@ -1,9 +1,6 @@
-from io import BytesIO
-
-from flask import Blueprint, request, jsonify, send_file
+from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity
 from app.controller.Cliente_Controller import ClienteController
-from app.controller.Certificado_Controller import CertificadoController
 from app.utils.auth import ID_ROL_COORDINADOR, ID_ROL_PERSONAL_CAPACITADO, requiere_propio_cliente, requiere_roles
 
 cliente_bp = Blueprint('cliente_bp', __name__)
@@ -52,20 +49,6 @@ def cancelar_inscripcion(cedula, id_inscripcion):
         return jsonify({"mensaje": str(error)}), 404
     except ValueError as error:
         return jsonify({"mensaje": str(error)}), 400
-
-@cliente_bp.route('/<cedula>/certificados/<int:id_inscripcion>', methods=['GET'])
-@requiere_propio_cliente
-def descargar_certificado(cedula, id_inscripcion):
-    try:
-        contenido, nombre_archivo = CertificadoController.generar_pdf_cliente(cedula, id_inscripcion)
-    except LookupError as error:
-        return jsonify({"mensaje": str(error)}), 404
-    return send_file(
-        BytesIO(contenido),
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name=nombre_archivo
-    )
 
 @cliente_bp.route('/<cedula>/perfil', methods=['PUT'])
 @requiere_propio_cliente
