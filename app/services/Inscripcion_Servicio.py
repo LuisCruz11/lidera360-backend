@@ -1,5 +1,7 @@
 from app.models.dao.Inscripcion_DAO import InscripcionDAO
 from app.models.dto.Inscripcion_DTO import InscripcionDTO
+from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
+from app.database.Db import Db
 from datetime import date
 
 
@@ -18,7 +20,7 @@ class InscripcionServicio:
         return None
 
     @staticmethod
-    def crear_inscripcion(data):
+    def crear_inscripcion(data, id_usuario=None):
         cliente_cedula = data.get('cliente_cedula')
         id_taller = data.get('id_taller')
 
@@ -35,10 +37,21 @@ class InscripcionServicio:
             data.get('id_estado'),
             data.get('fecha_inscripcion') or date.today().isoformat()
         )
-        return InscripcionDAO.crear(inscripcion)
+
+        conexion = Db.obtener_conexion()
+        try:
+            id_inscripcion = InscripcionDAO.crear(inscripcion, conexion)
+            nivel_nuevo = ProgresoClienteDAO.avanzar_si_aprobo(id_inscripcion, id_usuario, conexion)
+            conexion.commit()
+            return id_inscripcion, nivel_nuevo
+        except Exception:
+            conexion.rollback()
+            raise
+        finally:
+            conexion.close()
 
     @staticmethod
-    def actualizar_inscripcion(id_inscripcion, data):
+    def actualizar_inscripcion(id_inscripcion, data, id_usuario=None):
         inscripcion = InscripcionDTO(
             id_inscripcion,
             data.get('cliente_cedula'),
@@ -46,7 +59,20 @@ class InscripcionServicio:
             data.get('id_estado'),
             data.get('fecha_inscripcion')
         )
-        return InscripcionDAO.actualizar(id_inscripcion, inscripcion)
+
+        conexion = Db.obtener_conexion()
+        try:
+            actualizado = InscripcionDAO.actualizar(id_inscripcion, inscripcion, conexion)
+            nivel_nuevo = None
+            if actualizado:
+                nivel_nuevo = ProgresoClienteDAO.avanzar_si_aprobo(id_inscripcion, id_usuario, conexion)
+            conexion.commit()
+            return actualizado, nivel_nuevo
+        except Exception:
+            conexion.rollback()
+            raise
+        finally:
+            conexion.close()
 
     @staticmethod
     def eliminar_inscripcion(id_inscripcion):

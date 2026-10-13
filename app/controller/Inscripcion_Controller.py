@@ -12,12 +12,12 @@ class InscripcionController:
         return InscripcionServicio.obtener_inscripcion(id_inscripcion)
 
     @staticmethod
-    def crear_inscripcion(data):
-        return InscripcionServicio.crear_inscripcion(data)
+    def crear_inscripcion(data, id_usuario=None):
+        return InscripcionServicio.crear_inscripcion(data, id_usuario)
 
     @staticmethod
-    def actualizar_inscripcion(id_inscripcion, data):
-        return InscripcionServicio.actualizar_inscripcion(id_inscripcion, data)
+    def actualizar_inscripcion(id_inscripcion, data, id_usuario=None):
+        return InscripcionServicio.actualizar_inscripcion(id_inscripcion, data, id_usuario)
 
     @staticmethod
     def eliminar_inscripcion(id_inscripcion):

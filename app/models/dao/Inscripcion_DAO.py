@@ -53,8 +53,11 @@ class InscripcionDAO:
             conexion.close()
 
     @staticmethod
-    def crear(inscripcion_dto):
-        conexion = Db.obtener_conexion()
+    def crear(inscripcion_dto, conexion=None):
+        cerrar_conexion = conexion is None
+        if cerrar_conexion:
+            conexion = Db.obtener_conexion()
+
         try:
             cursor = conexion.cursor()
             cursor.execute("""
@@ -66,14 +69,19 @@ class InscripcionDAO:
                 inscripcion_dto.id_estado,
                 inscripcion_dto.fecha_inscripcion
             ))
-            conexion.commit()
+            if cerrar_conexion:
+                conexion.commit()
             return cursor.lastrowid
         finally:
-            conexion.close()
+            if cerrar_conexion:
+                conexion.close()
 
     @staticmethod
-    def actualizar(id_inscripcion, inscripcion_dto):
-        conexion = Db.obtener_conexion()
+    def actualizar(id_inscripcion, inscripcion_dto, conexion=None):
+        cerrar_conexion = conexion is None
+        if cerrar_conexion:
+            conexion = Db.obtener_conexion()
+
         try:
             cursor = conexion.cursor()
             cursor.execute("""
@@ -87,10 +95,12 @@ class InscripcionDAO:
                 inscripcion_dto.fecha_inscripcion,
                 id_inscripcion
             ))
-            conexion.commit()
+            if cerrar_conexion:
+                conexion.commit()
             return cursor.rowcount > 0
         finally:
-            conexion.close()
+            if cerrar_conexion:
+                conexion.close()
 
     @staticmethod
     def actualizar_estado(id_inscripcion, id_estado, conexion=None):

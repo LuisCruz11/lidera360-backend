@@ -178,7 +178,18 @@ class ClienteDAO:
                     for fila in cursor.fetchall()
                 ]
 
+            programa_completado = False
+            if progreso and progreso.get("id_tipo_taller"):
+                cursor.execute("SELECT MAX(id_tipo_taller) AS ultimo_nivel FROM tipo_taller")
+                ultimo_nivel = (cursor.fetchone() or {}).get("ultimo_nivel")
+                programa_completado = progreso["id_tipo_taller"] == ultimo_nivel and any(
+                    taller.get("id_tipo_taller") == ultimo_nivel
+                    and (taller.get("estado") or "").strip().lower() == "aprobado"
+                    for taller in historial
+                )
+
             return {
+                "programa_completado": programa_completado,
                 "perfil": {
                     **perfil,
                     "estado": perfil.get("estado") or ""

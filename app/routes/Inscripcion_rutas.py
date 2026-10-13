@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import get_jwt_identity
 from app.controller.Inscripcion_Controller import InscripcionController
 from app.utils.auth import ID_ROL_COORDINADOR, requiere_roles
 
@@ -41,18 +42,22 @@ def crear_inscripcion():
         }), 400
 
     try:
-        id_inscripcion = InscripcionController.crear_inscripcion(data)
-        return jsonify({"mensaje": "Inscripcion creada", "id_inscripcion": id_inscripcion}), 201
+        id_inscripcion, nivel_nuevo = InscripcionController.crear_inscripcion(data, get_jwt_identity())
+        return jsonify({
+            "mensaje": "Inscripcion creada",
+            "id_inscripcion": id_inscripcion,
+            "nivel_nuevo": nivel_nuevo
+        }), 201
     except ValueError as error:
         return jsonify({"mensaje": str(error)}), 409
 
 
 @inscripcion_bp.route('/<int:id_inscripcion>', methods=['PUT'])
 def actualizar_inscripcion(id_inscripcion):
-    data = request.json
-    actualizado = InscripcionController.actualizar_inscripcion(id_inscripcion, data)
+    data = request.get_json(silent=True) or {}
+    actualizado, nivel_nuevo = InscripcionController.actualizar_inscripcion(id_inscripcion, data, get_jwt_identity())
     if actualizado:
-        return jsonify({"mensaje": "Inscripcion actualizada"})
+        return jsonify({"mensaje": "Inscripcion actualizada", "nivel_nuevo": nivel_nuevo})
     return jsonify({"mensaje": "Inscripcion no encontrada"}), 404
 
 

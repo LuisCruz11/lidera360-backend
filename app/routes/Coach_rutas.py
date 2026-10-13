@@ -55,7 +55,7 @@ def registrar_actividad(id_taller):
 def evaluar_participante(id_inscripcion):
     data = request.get_json(silent=True) or {}
     try:
-        CoachController.evaluar_participante(id_inscripcion, _cedula_personal(), get_jwt_identity(), data)
-        return jsonify({"mensaje": "Evaluación registrada"})
+        nivel_nuevo = CoachController.evaluar_participante(id_inscripcion, _cedula_personal(), get_jwt_identity(), data)
+        return jsonify({"mensaje": "Evaluación registrada", "nivel_nuevo": nivel_nuevo})
     except (PermissionError, LookupError, ValueError) as error:
         return _respuesta_error(error)

@@ -2,6 +2,7 @@ from app.models.dao.Taller_DAO import TallerDAO
 from app.models.dao.Inscripcion_DAO import InscripcionDAO
 from app.models.dao.Estado_DAO import EstadoDAO
 from app.models.dao.Auditoria_DAO import AuditoriaDAO
+from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
 from app.models.dto.Auditoria_DTO import AuditoriaDTO
 from app.database.Db import Db
 
@@ -72,7 +73,9 @@ class CoachServicio:
                 AuditoriaDTO(None, id_usuario, 'inscripcion', 'evaluacion', descripcion, None, inscripcion.id_taller),
                 conexion
             )
+            nivel_nuevo = ProgresoClienteDAO.avanzar_si_aprobo(id_inscripcion, id_usuario, conexion)
             conexion.commit()
+            return nivel_nuevo
         except Exception:
             conexion.rollback()
             raise
