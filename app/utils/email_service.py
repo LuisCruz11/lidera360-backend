@@ -23,7 +23,10 @@ def _enviar_correo(destinatario, asunto, texto, html):
         data=json.dumps(payload).encode("utf-8"),
         headers={
             "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            # Cloudflare (delante de la API de Resend) bloquea el User-Agent por defecto
+            # de urllib ("Python-urllib/3.x") con el error 1010.
+            "User-Agent": "Lidera360/1.0"
         },
         method="POST"
     )
