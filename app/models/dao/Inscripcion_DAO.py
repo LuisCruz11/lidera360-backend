@@ -1,3 +1,5 @@
+import pymysql
+
 from app.database.Db import Db
 from app.models.dto.Inscripcion_DTO import InscripcionDTO
 
@@ -36,6 +38,38 @@ class InscripcionDAO:
         if fila:
             return InscripcionDTO(*fila)
         return None
+
+    @staticmethod
+    def obtener_datos_notificacion(id_inscripcion):
+        """Datos para notificar al cliente sobre su inscripción: destinatario, taller, estado y coach."""
+        conexion = Db.obtener_conexion()
+        try:
+            cursor = conexion.cursor(pymysql.cursors.DictCursor)
+            cursor.execute("""
+                SELECT c.nombres, c.correo,
+                       t.nombre AS taller, t.fecha_inicio, t.fecha_fin,
+                       tt.nombre AS nivel,
+                       e.nombre AS estado,
+                       t.id_tipo_taller = (SELECT MAX(id_tipo_taller) FROM tipo_taller) AS es_ultimo_nivel,
+                       (
+                           SELECT GROUP_CONCAT(
+                               NULLIF(TRIM(CONCAT(COALESCE(p.nombres, ''), ' ', COALESCE(p.apellidos, ''))), '')
+                               SEPARATOR ', '
+                           )
+                           FROM taller_personal tp
+                           INNER JOIN personal p ON p.cedula = tp.cedula_personal
+                           WHERE tp.id_taller = t.id_taller AND LOWER(TRIM(tp.rol_en_taller)) = 'coach'
+                       ) AS coach
+                FROM inscripcion i
+                INNER JOIN clientes c ON c.cedula = i.cliente_cedula
+                INNER JOIN taller t ON t.id_taller = i.id_taller
+                LEFT JOIN tipo_taller tt ON tt.id_tipo_taller = t.id_tipo_taller
+                LEFT JOIN estados e ON e.id_estado = i.id_estado
+                WHERE i.id_inscripcion = %s
+            """, (id_inscripcion,))
+            return cursor.fetchone()
+        finally:
+            conexion.close()
 
     @staticmethod
     def existe(cliente_cedula, id_taller):

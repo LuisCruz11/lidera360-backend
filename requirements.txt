@@ -6,3 +6,4 @@ gunicorn
 pymysql
 bcrypt
 python-dotenv
+openpyxl

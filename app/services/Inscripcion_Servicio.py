@@ -2,6 +2,7 @@ from app.models.dao.Inscripcion_DAO import InscripcionDAO
 from app.models.dto.Inscripcion_DTO import InscripcionDTO
 from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
 from app.database.Db import Db
+from app.services.Notificacion_Servicio import NotificacionServicio
 from datetime import date
 
 
@@ -43,12 +44,14 @@ class InscripcionServicio:
             id_inscripcion = InscripcionDAO.crear(inscripcion, conexion)
             nivel_nuevo = ProgresoClienteDAO.avanzar_si_aprobo(id_inscripcion, id_usuario, conexion)
             conexion.commit()
-            return id_inscripcion, nivel_nuevo
         except Exception:
             conexion.rollback()
             raise
         finally:
             conexion.close()
+
+        NotificacionServicio.inscripcion_creada(id_inscripcion, nivel_nuevo)
+        return id_inscripcion, nivel_nuevo
 
     @staticmethod
     def actualizar_inscripcion(id_inscripcion, data, id_usuario=None):
@@ -60,6 +63,8 @@ class InscripcionServicio:
             data.get('fecha_inscripcion')
         )
 
+        anterior = InscripcionDAO.obtener_por_id(id_inscripcion)
+
         conexion = Db.obtener_conexion()
         try:
             actualizado = InscripcionDAO.actualizar(id_inscripcion, inscripcion, conexion)
@@ -67,12 +72,15 @@ class InscripcionServicio:
             if actualizado:
                 nivel_nuevo = ProgresoClienteDAO.avanzar_si_aprobo(id_inscripcion, id_usuario, conexion)
             conexion.commit()
-            return actualizado, nivel_nuevo
         except Exception:
             conexion.rollback()
             raise
         finally:
             conexion.close()
+
+        if actualizado and anterior:
+            NotificacionServicio.estado_actualizado(id_inscripcion, anterior.id_estado, nivel_nuevo)
+        return actualizado, nivel_nuevo
 
     @staticmethod
     def eliminar_inscripcion(id_inscripcion):

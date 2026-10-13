@@ -17,6 +17,7 @@ class Config:
     BREVO_API_KEY = os.getenv("BREVO_API_KEY")
     BREVO_SENDER_EMAIL = os.getenv("BREVO_SENDER_EMAIL")
     BREVO_SENDER_NAME = os.getenv("BREVO_SENDER_NAME", "Lidera360")
+    EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT", 10))
 
     FRONTEND_URL = os.getenv("FRONTEND_URL", "https://lidera360-frontend.onrender.com").rstrip("/")
 

@@ -5,6 +5,7 @@ from app.models.dao.Auditoria_DAO import AuditoriaDAO
 from app.models.dao.Progreso_Cliente_DAO import ProgresoClienteDAO
 from app.models.dto.Auditoria_DTO import AuditoriaDTO
 from app.database.Db import Db
+from app.services.Notificacion_Servicio import NotificacionServicio
 from app.services.Asignacion_Taller import ROL_EN_TALLER_COACH, validar_asignacion, validar_cedula_personal
 
 
@@ -65,9 +66,11 @@ class CoachServicio:
             )
             nivel_nuevo = ProgresoClienteDAO.avanzar_si_aprobo(id_inscripcion, id_usuario, conexion)
             conexion.commit()
-            return nivel_nuevo
         except Exception:
             conexion.rollback()
             raise
         finally:
             conexion.close()
+
+        NotificacionServicio.estado_actualizado(id_inscripcion, inscripcion.id_estado, nivel_nuevo, observacion)
+        return nivel_nuevo

@@ -14,7 +14,6 @@ def _rol_actual():
 
 
 def requiere_roles(*roles_permitidos):
-    """Restringe una ruta a usuarios cuyo id_rol esté en roles_permitidos."""
     def decorador(vista):
         @wraps(vista)
         def envoltura(*args, **kwargs):
@@ -28,7 +27,6 @@ def requiere_roles(*roles_permitidos):
 
 
 def requiere_propio_usuario(vista):
-    """Permite al coordinador o al dueño del id_usuario de la ruta."""
     @wraps(vista)
     def envoltura(id_usuario, *args, **kwargs):
         if request.method == 'OPTIONS':
@@ -40,7 +38,6 @@ def requiere_propio_usuario(vista):
 
 
 def requiere_propio_cliente(vista):
-    """Permite al coordinador o al cliente dueño de la cedula de la ruta."""
     @wraps(vista)
     def envoltura(cedula, *args, **kwargs):
         if request.method == 'OPTIONS':

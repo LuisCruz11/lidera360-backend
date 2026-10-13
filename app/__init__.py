@@ -17,6 +17,7 @@ from app.routes.Progreso_Cliente_rutas import progreso_cliente_bp
 from app.routes.Auditoria_rutas import auditoria_bp
 from app.routes.Coach_rutas import coach_bp
 from app.routes.Personal_Capacitado_rutas import personal_capacitado_bp
+from app.routes.Reporte_rutas import reporte_bp
 
 RUTAS_PUBLICAS = {
     ('/api/usuarios/login', 'POST'),
@@ -31,7 +32,8 @@ def crear_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    CORS(app)
+    # Content-Disposition se expone para que el front-end lea el nombre de los archivos descargados.
+    CORS(app, expose_headers=["Content-Disposition"])
     JWTManager(app)
     limiter.init_app(app)
 
@@ -63,5 +65,6 @@ def crear_app():
     app.register_blueprint(auditoria_bp, url_prefix='/api/auditorias')
     app.register_blueprint(coach_bp, url_prefix='/api/coach')
     app.register_blueprint(personal_capacitado_bp, url_prefix='/api/personal-capacitado')
+    app.register_blueprint(reporte_bp, url_prefix='/api/reportes')
 
     return app

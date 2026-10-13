@@ -13,6 +13,7 @@ from app.utils.validaciones import (
     validar_password,
     validar_telefono,
 )
+from app.services.Notificacion_Servicio import NotificacionServicio
 import bcrypt
 
 ID_ROL_CLIENTE = 4
@@ -41,11 +42,15 @@ class ClienteServicio:
         if not id_taller:
             raise ValueError("El id_taller es obligatorio")
 
-        return ClienteDAO.inscribir_en_taller(cedula, id_taller)
+        id_inscripcion = ClienteDAO.inscribir_en_taller(cedula, id_taller)
+        NotificacionServicio.inscripcion_creada(id_inscripcion)
+        return id_inscripcion
 
     @staticmethod
     def cancelar_inscripcion(cedula, id_inscripcion, id_usuario):
+        datos_notificacion = NotificacionServicio.datos_para_cancelacion(id_inscripcion)
         ClienteDAO.cancelar_inscripcion(cedula, id_inscripcion, id_usuario)
+        NotificacionServicio.inscripcion_cancelada(datos_notificacion)
 
     @staticmethod
     def actualizar_contacto(cedula, data):
